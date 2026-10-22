@@ -1,0 +1,6 @@
+backend/.env
+**/node_modules/
+frontend/dist/
+*.exe
+.DS_Store
+.DS_Store
