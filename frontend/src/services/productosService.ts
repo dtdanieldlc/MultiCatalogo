@@ -35,9 +35,20 @@ async function request<T>(path: string): Promise<T> {
   return data as T;
 }
 
-// GET /api/productos (lista completa)
-export const getProductos = (): Promise<Producto[]> =>
-  request<Producto[]>("/api/productos");
+/** Acepta tanto un array plano como la respuesta paginada { data, page, limit, total }. */
+function unwrapList(payload: unknown): Producto[] {
+  if (Array.isArray(payload)) return payload as Producto[];
+  if (payload && typeof payload === "object" && Array.isArray((payload as { data?: unknown }).data)) {
+    return (payload as { data: Producto[] }).data;
+  }
+  return [];
+}
+
+// GET /api/productos (lista completa o página)
+export const getProductos = async (): Promise<Producto[]> => {
+  const raw = await request<unknown>("/api/productos");
+  return unwrapList(raw);
+};
 
 // GET /api/productos/:id (detalle). Se envía el id tal cual viene de la URL;
 // la validación (400 si no es numérico, 404 si no existe) la hace el backend.

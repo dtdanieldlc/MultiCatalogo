@@ -61,6 +61,11 @@ func run() error {
 	if err := config.Migrate(db, "backoffice", database.MigracionBackoffice); err != nil {
 		return err
 	}
+	// Datos demo DTLC (productos 9..33, red, cuentas, pedidos, liquidaciones).
+	// Idempotente: solo corre una vez (marca en seed_aplicados). Timeout 2 min.
+	if err := config.MigrateWithTimeout(db, "datos_demo", database.MigracionDatosDemo, 2*time.Minute); err != nil {
+		return err
+	}
 
 	// Redis (Fase 3): si no está disponible, se inyecta un caché nulo y la API sigue
 	// funcionando (todas las lecturas van a PostgreSQL).

@@ -22,3 +22,9 @@ var MigracionSeguridad string
 //
 //go:embed 004_backoffice.sql
 var MigracionBackoffice string
+
+// MigracionDatosDemo productos 9..33, red ampliada, cuentas, pedidos y liquidaciones.
+// Idempotente vía tabla seed_aplicados (nombre = '005_datos_demo').
+//
+//go:embed 005_datos_demo.sql
+var MigracionDatosDemo string
