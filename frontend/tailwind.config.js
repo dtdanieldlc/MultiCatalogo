@@ -24,7 +24,7 @@ export default {
         cream: "#fbf7f3",
         sand: "#f3ece5",
         leaf: { 50: "#f2f7f2", 100: "#e0ebe0", 500: "#5b8a62", 600: "#46704d", 700: "#385a3e" },
-        gold: { 50: "#fdf6e3", 100: "#faeac0", 600: "#b07a12", 700: "#8a5a0b" },
+        gold: { 50: "#fdf6e3", 100: "#faeac0", 500: "#c9920e", 600: "#b07a12", 700: "#8a5a0b" },
       },
       boxShadow: {
         soft: "0 1px 2px rgba(35,29,29,.04), 0 8px 24px -12px rgba(35,29,29,.12)",
