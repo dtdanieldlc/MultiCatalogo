@@ -1,14 +1,19 @@
-// Tarjeta de producto reutilizable (Storefront, Catálogo y Favoritos).
+// Tarjeta de producto: stock, comparar, carrito
 import { Link } from "react-router-dom";
 import type { Producto } from "../data/productos";
-import { useFavorites } from "../context/FavoritesContext";
+import { useCompare } from "../context/CompareContext";
 import { Icon, money } from "./ui";
 
-const ProductCard = ({ prod, onAdd }: { prod: Producto; onAdd?: (p: Producto) => void }) => {
-  const { isFavorite, toggle } = useFavorites();
-  const fav = isFavorite(prod.id);
+const ProductCard = ({
+  prod,
+  onAdd,
+}: {
+  prod: Producto;
+  onAdd?: (p: Producto) => void;
+}) => {
+  const { toggle, has, isFull } = useCompare();
+  const enComparar = has(prod.id);
   const sinStock = typeof prod.stock === "number" && prod.stock <= 0;
-  const stockBajo = typeof prod.stock === "number" && prod.stock > 0 && prod.stock <= 10;
 
   return (
     <article className="group flex flex-col">
@@ -20,9 +25,11 @@ const ProductCard = ({ prod, onAdd }: { prod: Producto; onAdd?: (p: Producto) =>
           src={prod.img}
           alt={prod.nombre}
           loading="lazy"
-          className={`h-full w-full object-cover transition duration-500 group-hover:scale-105 ${
-            sinStock ? "opacity-60 grayscale" : ""
-          }`}
+          className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
+          onError={(e) => {
+            (e.target as HTMLImageElement).src =
+              "https://images.unsplash.com/photo-1571781926291-c77df809dbe5?w=600&h=600&fit=crop";
+          }}
         />
         <div className="absolute left-3 top-3 flex flex-wrap gap-1.5">
           <span className="rounded-full bg-white/90 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wider text-ink-700 backdrop-blur">
@@ -34,39 +41,14 @@ const ProductCard = ({ prod, onAdd }: { prod: Producto; onAdd?: (p: Producto) =>
             </span>
           )}
           {prod.destacado && !prod.nuevo && (
-            <span className="rounded-full bg-gold-600 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wider text-white shadow-sm">
+            <span className="rounded-full bg-gold-500 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wider text-white shadow-sm">
               Destacado
             </span>
           )}
         </div>
-
-        {/* Favorito */}
-        <button
-          type="button"
-          onClick={(e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            toggle(prod);
-          }}
-          aria-label={fav ? "Quitar de favoritos" : "Añadir a favoritos"}
-          aria-pressed={fav}
-          className={`absolute right-3 top-3 flex h-9 w-9 items-center justify-center rounded-full shadow-sm backdrop-blur transition active:scale-90 ${
-            fav
-              ? "bg-brand-600 text-white"
-              : "bg-white/90 text-ink-600 hover:bg-brand-50 hover:text-brand-700"
-          }`}
-        >
-          <Icon name="heart" className="h-4 w-4" />
-        </button>
-
-        {sinStock && (
-          <span className="absolute bottom-3 left-3 rounded-full bg-ink-900/90 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wider text-white">
-            Agotado
-          </span>
-        )}
-        {stockBajo && (
-          <span className="absolute bottom-3 left-3 rounded-full bg-gold-600/95 px-2.5 py-1 text-[11px] font-semibold text-white">
-            Quedan {prod.stock}
+        {typeof prod.stock === "number" && prod.stock <= 30 && (
+          <span className="absolute bottom-3 left-3 rounded-full bg-ink-900/85 px-2.5 py-1 text-[11px] font-medium text-white backdrop-blur">
+            {prod.stock <= 0 ? "Agotado" : `Quedan ${prod.stock}`}
           </span>
         )}
       </Link>
@@ -78,17 +60,39 @@ const ProductCard = ({ prod, onAdd }: { prod: Producto; onAdd?: (p: Producto) =>
         </Link>
         <div className="mt-1 flex items-center justify-between gap-2">
           <p className="font-semibold text-ink-700">{money(prod.precio)}</p>
-          {onAdd && (
+          <div className="flex gap-1.5">
             <button
               type="button"
-              onClick={() => onAdd(prod)}
-              disabled={sinStock}
-              aria-label={sinStock ? `${prod.nombre} agotado` : `Añadir ${prod.nombre} al carrito`}
-              className="flex h-10 w-10 items-center justify-center rounded-full bg-ink-900 text-white transition hover:bg-brand-600 active:scale-90 disabled:cursor-not-allowed disabled:bg-ink-300"
+              onClick={() => toggle(prod)}
+              disabled={!enComparar && isFull}
+              title={
+                enComparar
+                  ? "Quitar de comparar"
+                  : isFull
+                    ? "Máximo 3 productos"
+                    : "Comparar"
+              }
+              aria-label="Comparar"
+              className={`flex h-10 w-10 items-center justify-center rounded-full border transition active:scale-90 ${
+                enComparar
+                  ? "border-brand-500 bg-brand-50 text-brand-700"
+                  : "border-ink-200 text-ink-500 hover:border-brand-300 hover:text-brand-600"
+              }`}
             >
-              <Icon name="plus" className="h-4 w-4" />
+              <Icon name="grid" className="h-4 w-4" />
             </button>
-          )}
+            {onAdd && (
+              <button
+                type="button"
+                onClick={() => onAdd(prod)}
+                disabled={sinStock}
+                aria-label={`Añadir ${prod.nombre} al carrito`}
+                className="flex h-10 w-10 items-center justify-center rounded-full bg-ink-900 text-white transition hover:bg-brand-600 active:scale-90 disabled:cursor-not-allowed disabled:opacity-40"
+              >
+                <Icon name="plus" className="h-4 w-4" />
+              </button>
+            )}
+          </div>
         </div>
       </div>
     </article>

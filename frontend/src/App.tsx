@@ -13,13 +13,12 @@ import Confirmacion from './components/Confirmacion';
 import Login from './components/Login';
 import Registro from './components/Registro';
 import MisPedidos from './components/MisPedidos';
-import Favoritos from "./components/Favoritos";
-import AdminUsuarios from "./components/AdminUsuarios";
 import AdminProductos from './components/AdminProductos';
 import AdminPedidos from './components/AdminPedidos';
 import AdminLiquidaciones from './components/AdminLiquidaciones';
 import { CartProvider } from './context/CartContext';
-import { FavoritesProvider } from './context/FavoritesContext';
+import { CompareProvider } from './context/CompareContext';
+import Comparar from './components/Comparar';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import OfflineBanner from './components/OfflineBanner';
 import PwaUpdateToast from './components/PwaUpdateToast';
@@ -59,9 +58,7 @@ const CartBoundary = ({ children }: { children: ReactNode }) => {
   const { user } = useAuth();
   return (
     <CartProvider key={user?.email ?? "anonimo"}>
-      <FavoritesProvider key={`fav-${user?.email ?? "anonimo"}`}>
-        {children}
-      </FavoritesProvider>
+      <CompareProvider>{children}</CompareProvider>
     </CartProvider>
   );
 };
@@ -84,7 +81,6 @@ function App() {
                 {/* Solo administrador: Dashboard y Red multinivel */}
                 <Route element={<AdminRoute />}>
                   <Route index element={<Dashboard />} />
-                  <Route path="admin/usuarios" element={<AdminUsuarios />} />
                   <Route path="admin/productos" element={<AdminProductos />} />
                   <Route path="admin/pedidos" element={<AdminPedidos />} />
                   <Route path="admin/liquidaciones" element={<AdminLiquidaciones />} />
@@ -94,12 +90,12 @@ function App() {
                 <Route path="mi-red" element={<MiRed />} />
                 <Route path="tienda" element={<Storefront />} />
                 <Route path="catalogo" element={<Catalogo />} />
+                <Route path="comparar" element={<Comparar />} />
                 <Route path="producto/:id" element={<DetalleProducto />} />
                 <Route path="carrito" element={<Carrito />} />
                 <Route path="checkout" element={<Checkout />} />
                 <Route path="confirmacion" element={<Confirmacion />} />
                 <Route path="mis-pedidos" element={<MisPedidos />} />
-                <Route path="favoritos" element={<Favoritos />} />
               </Route>
             </Route>
 

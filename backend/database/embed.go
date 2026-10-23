@@ -23,8 +23,8 @@ var MigracionSeguridad string
 //go:embed 004_backoffice.sql
 var MigracionBackoffice string
 
-// MigracionDatosDemo productos 9..33, red ampliada, cuentas, pedidos y liquidaciones.
-// Idempotente vía tabla seed_aplicados (nombre = '005_datos_demo').
+
+// MigracionImagenes corrige URLs de productos (picsum -> cosméticos).
 //
-//go:embed 005_datos_demo.sql
-var MigracionDatosDemo string
+//go:embed 006_imagenes_productos.sql
+var MigracionImagenes string

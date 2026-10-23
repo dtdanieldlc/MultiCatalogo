@@ -1,14 +1,15 @@
-// src/components/Checkout.tsx
-// Flujo de checkout (Tema 5 + Fase 4):
-// - Formulario de envío con validación básica
-// - Resumen del pedido en tiempo real
-// - Envía el pedido a POST /api/checkout y redirige a /confirmacion si el servidor lo confirma
-import { useState, type FormEvent } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { useCart } from '../context/CartContext';
-import { useAuth } from '../context/AuthContext';
-import { API_URL } from '../config';
-import { Alert, EmptyState, Icon, PageHeader, money } from './ui';
+// Checkout: envío estimado, cupones, resumen profesional
+import { useMemo, useState, type FormEvent } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { useCart } from "../context/CartContext";
+import { useAuth } from "../context/AuthContext";
+import { API_URL } from "../config";
+import {
+  aplicarCupon,
+  estimarEnvio,
+  type CouponResult,
+} from "../services/shippingService";
+import { Alert, EmptyState, Icon, PageHeader, money } from "./ui";
 
 interface DatosEnvio {
   nombre: string;
@@ -19,7 +20,11 @@ interface DatosEnvio {
   metodoPago: string;
 }
 
-const METODOS_PAGO = ["Tarjeta de crédito", "Transferencia bancaria", "Efectivo contra entrega"];
+const METODOS_PAGO = [
+  "Tarjeta de crédito",
+  "Transferencia bancaria",
+  "Efectivo contra entrega",
+];
 
 const Checkout = () => {
   const { cart, totalPrice, clearCart } = useCart();
@@ -28,22 +33,38 @@ const Checkout = () => {
 
   const [datos, setDatos] = useState<DatosEnvio>({
     nombre: "",
-    email: "",
+    email: user?.email ?? "",
     direccion: "",
     ciudad: "",
     telefono: "",
     metodoPago: METODOS_PAGO[0],
   });
-  const [procesando, setProcesando] = useState<boolean>(false);
-  const [error, setError] = useState<string>("");
+  const [cuponInput, setCuponInput] = useState("");
+  const [cupon, setCupon] = useState<CouponResult | null>(null);
+  const [cuponError, setCuponError] = useState("");
+  const [procesando, setProcesando] = useState(false);
+  const [error, setError] = useState("");
 
-  // Si el carrito está vacío, mostramos un aviso en lugar del formulario
+  const envio = useMemo(
+    () => estimarEnvio(datos.ciudad, totalPrice),
+    [datos.ciudad, totalPrice]
+  );
+
+  const costoEnvio =
+    cupon?.envioGratis || envio.costo === 0 ? 0 : envio.costo;
+  const descuento = cupon?.descuento ?? 0;
+  const totalFinal = Math.max(0, totalPrice - descuento + costoEnvio);
+
   if (cart.length === 0) {
     return (
       <EmptyState
         title="No tienes productos en el carrito"
         text="Añade algo del catálogo para continuar con tu compra."
-        action={<Link to="/catalogo" className="btn btn-dark"><Icon name="arrow-left" className="h-4 w-4" /> Ir al catálogo</Link>}
+        action={
+          <Link to="/catalogo" className="btn btn-dark">
+            <Icon name="arrow-left" className="h-4 w-4" /> Ir al catálogo
+          </Link>
+        }
       />
     );
   }
@@ -52,8 +73,17 @@ const Checkout = () => {
     setDatos((prev) => ({ ...prev, [campo]: valor }));
   };
 
-  // Fase 4: el pedido se envía a POST /api/checkout (transacción ACID en el backend).
-  // El servidor calcula el total con los precios de la BD; aquí solo se mandan id y cantidad.
+  const aplicar = () => {
+    setCuponError("");
+    const r = aplicarCupon(cuponInput, totalPrice);
+    if ("error" in r) {
+      setCupon(null);
+      setCuponError(r.error);
+      return;
+    }
+    setCupon(r);
+  };
+
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (typeof navigator !== "undefined" && !navigator.onLine) {
@@ -79,120 +109,192 @@ const Checkout = () => {
             telefono: datos.telefono,
           },
           metodoPago: datos.metodoPago,
-          items: cart.map((item) => ({ id: item.id, cantidad: item.cantidad })),
+          items: cart.map((i) => ({
+            productoId: i.id,
+            cantidad: i.cantidad ?? 1,
+          })),
         }),
       });
-
-      // Errores con formato estandarizado: { status, message, details }
       const data = await response.json().catch(() => null);
       if (!response.ok) {
-        throw new Error(data?.message ?? "Error inesperado del servidor");
+        throw new Error(data?.message ?? `Error ${response.status}`);
       }
 
-      // Pedido confirmado por el servidor: vaciamos el carrito y mostramos el recibo
-      const pedido = { ...data, fecha: new Date(data.fecha).toLocaleString("es-EC") };
+      const pedido = {
+        numero: data.numero ?? data.pedido?.numero ?? `PED-${Date.now()}`,
+        items: cart.map((i) => ({
+          nombre: i.nombre,
+          cantidad: i.cantidad ?? 1,
+          precio: i.precio,
+        })),
+        total: data.total ?? totalFinal,
+        subtotal: totalPrice,
+        envio: costoEnvio,
+        descuento,
+        cupon: cupon?.codigo,
+        cliente: {
+          nombre: datos.nombre,
+          email: datos.email,
+          ciudad: datos.ciudad,
+          direccion: datos.direccion,
+          telefono: datos.telefono,
+        },
+        metodoPago: datos.metodoPago,
+        fecha: new Date().toLocaleString(),
+      };
+
       clearCart();
       navigate("/confirmacion", { state: { pedido } });
     } catch (err) {
-      // TypeError = el navegador no pudo contactar al servidor (caído, CORS, red)
-      setError(
-        err instanceof TypeError
-          ? "No se pudo conectar con el servidor"
-          : (err as Error).message
-      );
-      setProcesando(false); // el carrito NO se vacía: el cliente puede reintentar
+      setError(err instanceof Error ? err.message : "No se pudo procesar");
+    } finally {
+      setProcesando(false);
     }
   };
 
   return (
-    <div>
-      <PageHeader eyebrow="Último paso" title="Finalizar compra" />
+    <div className="mx-auto max-w-5xl">
+      <PageHeader
+        eyebrow="Compra"
+        title="Checkout"
+        subtitle="Completa tus datos de envío y confirma el pedido."
+      />
 
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-[1fr_380px]">
-        <form onSubmit={handleSubmit} className="space-y-6">
-          <section className="card p-6">
-            <h2 className="mb-5 font-display text-xl font-semibold">Datos de envío</h2>
-            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-              <div className="md:col-span-1">
-                <label htmlFor="nombre" className="label">Nombre completo *</label>
-                <input id="nombre" type="text" required autoComplete="name" value={datos.nombre} onChange={(e) => handleChange("nombre", e.target.value)} className="input" />
-              </div>
-              <div className="md:col-span-1">
-                <label htmlFor="email" className="label">Correo electrónico *</label>
-                <input id="email" type="email" required autoComplete="email" value={datos.email} onChange={(e) => handleChange("email", e.target.value)} className="input" />
-              </div>
-              <div className="md:col-span-2">
-                <label htmlFor="direccion" className="label">Dirección *</label>
-                <input id="direccion" type="text" required autoComplete="street-address" value={datos.direccion} onChange={(e) => handleChange("direccion", e.target.value)} className="input" />
-              </div>
-              <div className="md:col-span-1">
-                <label htmlFor="ciudad" className="label">Ciudad *</label>
-                <input id="ciudad" type="text" required autoComplete="address-level2" value={datos.ciudad} onChange={(e) => handleChange("ciudad", e.target.value)} className="input" />
-              </div>
-              <div className="md:col-span-1">
-                <label htmlFor="telefono" className="label">Teléfono *</label>
-                <input id="telefono" type="tel" required autoComplete="tel" value={datos.telefono} onChange={(e) => handleChange("telefono", e.target.value)} className="input" />
-              </div>
-            </div>
-          </section>
-
-          <section className="card p-6">
-            <h2 className="mb-5 font-display text-xl font-semibold">Método de pago</h2>
-            <div className="space-y-3" role="radiogroup">
-              {METODOS_PAGO.map((metodo) => {
-                const activo = datos.metodoPago === metodo;
-                return (
-                  <label
-                    key={metodo}
-                    className={`flex min-h-[52px] cursor-pointer items-center gap-3 rounded-xl border px-4 transition ${
-                      activo ? "border-brand-500 bg-brand-50 ring-4 ring-brand-100" : "border-ink-200 hover:border-ink-300"
-                    }`}
-                  >
-                    <input
-                      type="radio"
-                      name="metodoPago"
-                      value={metodo}
-                      checked={activo}
-                      onChange={(e) => handleChange("metodoPago", e.target.value)}
-                      className="h-4 w-4 accent-brand-600"
-                    />
-                    <span className="text-sm font-medium text-ink-800">{metodo}</span>
-                  </label>
-                );
-              })}
-            </div>
-          </section>
-
+      <form
+        onSubmit={handleSubmit}
+        className="grid gap-8 lg:grid-cols-[1.2fr_0.8fr]"
+      >
+        <div className="space-y-5">
           {error && <Alert>{error}</Alert>}
 
-          <button type="submit" disabled={procesando} className="btn btn-primary w-full py-4 text-base">
-            {procesando ? "Procesando pago…" : `Confirmar pedido · ${money(totalPrice)}`}
-          </button>
-        </form>
+          <div className="card space-y-4 p-6">
+            <h2 className="font-display text-lg font-semibold">Datos de envío</h2>
+            {(
+              [
+                ["nombre", "Nombre completo", "text"],
+                ["email", "Correo", "email"],
+                ["telefono", "Teléfono", "tel"],
+                ["direccion", "Dirección", "text"],
+                ["ciudad", "Ciudad", "text"],
+              ] as const
+            ).map(([campo, label, type]) => (
+              <div key={campo}>
+                <label className="label" htmlFor={campo}>
+                  {label}
+                </label>
+                <input
+                  id={campo}
+                  required
+                  type={type}
+                  className="input"
+                  value={datos[campo]}
+                  onChange={(e) => handleChange(campo, e.target.value)}
+                />
+              </div>
+            ))}
+            {datos.ciudad.trim() && (
+              <p className="rounded-xl bg-sand/80 px-4 py-3 text-sm text-ink-700">
+                <span className="font-semibold">Envío estimado: </span>
+                {costoEnvio === 0 && (cupon?.envioGratis || envio.costo === 0)
+                  ? "Gratis"
+                  : envio.etiqueta}
+              </p>
+            )}
+          </div>
 
-        {/* ===== RESUMEN ===== */}
-        <aside className="card h-fit p-6 lg:sticky lg:top-4">
-          <h2 className="font-display text-xl font-semibold">Resumen</h2>
-          <ul className="mt-5 space-y-4 border-b border-ink-100 pb-5">
-            {cart.map((item) => (
-              <li key={item.id} className="flex items-center gap-3">
-                <span className="relative">
-                  <img src={item.img} alt="" className="h-14 w-14 rounded-lg bg-sand object-cover" />
-                  <span className="absolute -right-2 -top-2 flex h-5 min-w-[20px] items-center justify-center rounded-full bg-ink-900 px-1 text-[11px] font-bold text-white">
-                    {item.cantidad}
-                  </span>
+          <div className="card space-y-4 p-6">
+            <h2 className="font-display text-lg font-semibold">Pago</h2>
+            <select
+              className="input"
+              value={datos.metodoPago}
+              onChange={(e) => handleChange("metodoPago", e.target.value)}
+            >
+              {METODOS_PAGO.map((m) => (
+                <option key={m} value={m}>
+                  {m}
+                </option>
+              ))}
+            </select>
+
+            <div>
+              <label className="label" htmlFor="cupon">
+                Cupón de descuento
+              </label>
+              <div className="flex gap-2">
+                <input
+                  id="cupon"
+                  className="input flex-1"
+                  placeholder="DTLC10, BIENVENIDA, ENVIOGRATIS"
+                  value={cuponInput}
+                  onChange={(e) => setCuponInput(e.target.value)}
+                />
+                <button
+                  type="button"
+                  onClick={aplicar}
+                  className="btn btn-outline"
+                >
+                  Aplicar
+                </button>
+              </div>
+              {cuponError && (
+                <p className="mt-2 text-sm text-red-600">{cuponError}</p>
+              )}
+              {cupon && (
+                <p className="mt-2 text-sm text-leaf-700">{cupon.mensaje}</p>
+              )}
+            </div>
+          </div>
+        </div>
+
+        <aside className="card h-fit space-y-4 p-6">
+          <h2 className="font-display text-lg font-semibold">Resumen</h2>
+          <ul className="space-y-2 border-b border-ink-100 pb-4 text-sm">
+            {cart.map((i) => (
+              <li key={i.id} className="flex justify-between gap-3">
+                <span className="text-ink-600">
+                  {i.nombre} × {i.cantidad ?? 1}
                 </span>
-                <span className="flex-1 text-sm text-ink-700">{item.nombre}</span>
-                <span className="text-sm font-semibold">{money(item.precio * item.cantidad)}</span>
+                <span className="font-medium">
+                  {money(i.precio * (i.cantidad ?? 1))}
+                </span>
               </li>
             ))}
           </ul>
-          <div className="mt-5 flex items-baseline justify-between">
-            <span className="font-semibold">Total</span>
-            <span className="font-display text-3xl font-semibold text-brand-700">{money(totalPrice)}</span>
+          <div className="space-y-1 text-sm">
+            <div className="flex justify-between">
+              <span className="text-ink-500">Subtotal</span>
+              <span>{money(totalPrice)}</span>
+            </div>
+            {descuento > 0 && (
+              <div className="flex justify-between text-leaf-700">
+                <span>Descuento</span>
+                <span>−{money(descuento)}</span>
+              </div>
+            )}
+            <div className="flex justify-between">
+              <span className="text-ink-500">Envío</span>
+              <span>{costoEnvio === 0 ? "Gratis" : money(costoEnvio)}</span>
+            </div>
+            <div className="flex items-baseline justify-between border-t border-ink-100 pt-3">
+              <span className="font-semibold">Total</span>
+              <span className="font-display text-2xl font-semibold text-brand-700">
+                {money(totalFinal)}
+              </span>
+            </div>
           </div>
+          <p className="text-xs text-ink-400">
+            Envío gratis en compras desde $80. Cupones demo: DTLC10, BIENVENIDA,
+            ENVIOGRATIS.
+          </p>
+          <button
+            type="submit"
+            disabled={procesando}
+            className="btn btn-primary w-full py-3.5"
+          >
+            {procesando ? "Procesando…" : "Confirmar pedido"}
+          </button>
         </aside>
-      </div>
+      </form>
     </div>
   );
 };
