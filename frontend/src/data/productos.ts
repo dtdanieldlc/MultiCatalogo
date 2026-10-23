@@ -1,7 +1,6 @@
 // src/data/productos.ts
 // Datos de ejemplo (mock) del catálogo.
-// NOTA: en la Unidad 2 estos datos se reemplazarán por los registros reales
-// de PostgreSQL consultados a través de GET /api/productos.
+// NOTA: en producción estos datos se reemplazan por GET /api/productos (PostgreSQL).
 
 export interface Producto {
   id: number;
@@ -11,15 +10,21 @@ export interface Producto {
   categoria: string;
   img: string;        // Imagen principal (portada)
   galeria: string[];  // Imágenes adicionales para la galería/lightbox
+  destacado?: boolean;
+  nuevo?: boolean;
+  stock?: number;
 }
 
-// Lista de categorías derivada de los productos (se usa para los filtros)
+// Lista de categorías (filtros del catálogo)
 export const categorias = [
   "Serum",
   "Crema",
   "Tónico",
   "Mascarilla",
   "Kit",
+  "Limpiador",
+  "Protector Solar",
+  "Aceite",
 ];
 
 export const productosMock: Producto[] = [
@@ -36,6 +41,8 @@ export const productosMock: Producto[] = [
       "https://picsum.photos/seed/serum2/600",
       "https://picsum.photos/seed/serum3/600",
     ],
+    destacado: true,
+    stock: 85,
   },
   {
     id: 2,
@@ -50,6 +57,7 @@ export const productosMock: Producto[] = [
       "https://picsum.photos/seed/crema2/600",
       "https://picsum.photos/seed/crema3/600",
     ],
+    stock: 120,
   },
   {
     id: 3,
@@ -64,6 +72,7 @@ export const productosMock: Producto[] = [
       "https://picsum.photos/seed/tonico2/600",
       "https://picsum.photos/seed/tonico3/600",
     ],
+    stock: 95,
   },
   {
     id: 4,
@@ -78,6 +87,8 @@ export const productosMock: Producto[] = [
       "https://picsum.photos/seed/mascarilla2/600",
       "https://picsum.photos/seed/mascarilla3/600",
     ],
+    destacado: true,
+    stock: 60,
   },
   {
     id: 5,
@@ -92,6 +103,7 @@ export const productosMock: Producto[] = [
       "https://picsum.photos/seed/retinol2/600",
       "https://picsum.photos/seed/retinol3/600",
     ],
+    stock: 70,
   },
   {
     id: 6,
@@ -106,6 +118,7 @@ export const productosMock: Producto[] = [
       "https://picsum.photos/seed/ojos2/600",
       "https://picsum.photos/seed/ojos3/600",
     ],
+    stock: 110,
   },
   {
     id: 7,
@@ -120,6 +133,7 @@ export const productosMock: Producto[] = [
       "https://picsum.photos/seed/exfoliante2/600",
       "https://picsum.photos/seed/exfoliante3/600",
     ],
+    stock: 80,
   },
   {
     id: 8,
@@ -134,5 +148,136 @@ export const productosMock: Producto[] = [
       "https://picsum.photos/seed/kit2/600",
       "https://picsum.photos/seed/kit3/600",
     ],
+    destacado: true,
+    stock: 40,
+  },
+  // ——— Nuevos productos DTLC ———
+  {
+    id: 9,
+    nombre: "Limpiador Suave Espuma",
+    descripcion:
+      "Gel-espuma de limpieza con extracto de avena y glicerina. Elimina impurezas sin resecar y deja la piel suave y equilibrada.",
+    precio: 22.0,
+    categoria: "Limpiador",
+    img: "https://picsum.photos/seed/limpiador/600",
+    galeria: [
+      "https://picsum.photos/seed/limpiador1/600",
+      "https://picsum.photos/seed/limpiador2/600",
+      "https://picsum.photos/seed/limpiador3/600",
+    ],
+    nuevo: true,
+    stock: 150,
+  },
+  {
+    id: 10,
+    nombre: "Protector Solar FPS 50+",
+    descripcion:
+      "Protector solar de amplio espectro, textura ultraligera e invisible. Resistente al agua, ideal para uso diario y clima tropical.",
+    precio: 38.0,
+    categoria: "Protector Solar",
+    img: "https://picsum.photos/seed/solar/600",
+    galeria: [
+      "https://picsum.photos/seed/solar1/600",
+      "https://picsum.photos/seed/solar2/600",
+      "https://picsum.photos/seed/solar3/600",
+    ],
+    nuevo: true,
+    destacado: true,
+    stock: 90,
+  },
+  {
+    id: 11,
+    nombre: "Aceite Facial de Rosa Mosqueta",
+    descripcion:
+      "Aceite 100% puro de rosa mosqueta con vitamina A natural. Regenera, unifica el tono y aporta brillo saludable sin dejar grasa.",
+    precio: 42.0,
+    categoria: "Aceite",
+    img: "https://picsum.photos/seed/aceite/600",
+    galeria: [
+      "https://picsum.photos/seed/aceite1/600",
+      "https://picsum.photos/seed/aceite2/600",
+      "https://picsum.photos/seed/aceite3/600",
+    ],
+    nuevo: true,
+    stock: 55,
+  },
+  {
+    id: 12,
+    nombre: "Serum Niacinamida 10%",
+    descripcion:
+      "Serum de alta concentración de niacinamida. Minimiza poros, controla el sebo y refuerza la barrera cutánea en 4 semanas.",
+    precio: 39.0,
+    categoria: "Serum",
+    img: "https://picsum.photos/seed/niacinamida/600",
+    galeria: [
+      "https://picsum.photos/seed/niacinamida1/600",
+      "https://picsum.photos/seed/niacinamida2/600",
+      "https://picsum.photos/seed/niacinamida3/600",
+    ],
+    nuevo: true,
+    stock: 75,
+  },
+  {
+    id: 13,
+    nombre: "Mascarilla de Arcilla Verde",
+    descripcion:
+      "Mascarilla purificante con arcilla verde y extracto de té verde. Absorbe exceso de grasa y deja la piel mate y fresca.",
+    precio: 24.5,
+    categoria: "Mascarilla",
+    img: "https://picsum.photos/seed/arcilla/600",
+    galeria: [
+      "https://picsum.photos/seed/arcilla1/600",
+      "https://picsum.photos/seed/arcilla2/600",
+      "https://picsum.photos/seed/arcilla3/600",
+    ],
+    stock: 100,
+  },
+  {
+    id: 14,
+    nombre: "Kit Anti-Edad Premium",
+    descripcion:
+      "Pack de lujo: serum retinol, crema firming y contorno de ojos. Rutina completa anti-edad con resultados visibles en 30 días.",
+    precio: 149.0,
+    categoria: "Kit",
+    img: "https://picsum.photos/seed/kitanti/600",
+    galeria: [
+      "https://picsum.photos/seed/kitanti1/600",
+      "https://picsum.photos/seed/kitanti2/600",
+      "https://picsum.photos/seed/kitanti3/600",
+    ],
+    destacado: true,
+    nuevo: true,
+    stock: 25,
+  },
+  {
+    id: 15,
+    nombre: "Crema Corporal Manteca de Karité",
+    descripcion:
+      "Crema corporal densa y nutritiva con manteca de karité y aceite de almendras. Ideal para piel seca y zonas ásperas.",
+    precio: 29.0,
+    categoria: "Crema",
+    img: "https://picsum.photos/seed/corporal/600",
+    galeria: [
+      "https://picsum.photos/seed/corporal1/600",
+      "https://picsum.photos/seed/corporal2/600",
+      "https://picsum.photos/seed/corporal3/600",
+    ],
+    stock: 130,
+  },
+  {
+    id: 16,
+    nombre: "Limpiador Aceite Bifásico",
+    descripcion:
+      "Aceite limpiador bifásico que disuelve maquillaje waterproof y filtro solar. Se transforma en leche al contacto con agua.",
+    precio: 31.0,
+    categoria: "Limpiador",
+    img: "https://picsum.photos/seed/bifasico/600",
+    galeria: [
+      "https://picsum.photos/seed/bifasico1/600",
+      "https://picsum.photos/seed/bifasico2/600",
+      "https://picsum.photos/seed/bifasico3/600",
+    ],
+    nuevo: true,
+    stock: 65,
   },
 ];

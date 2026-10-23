@@ -23,36 +23,69 @@ export const redInicial: Referido = {
   id: 0,
   nombre: "Tú",
   nivel: 0,
-  ventas: 2400,
+  ventas: 3200,
   hijos: [
     {
       id: 1,
       nombre: "Ana García",
       nivel: 1,
-      ventas: 1200,
+      ventas: 1450,
       hijos: [
         {
           id: 4,
           nombre: "Carlos Ruiz",
           nivel: 2,
-          ventas: 500,
+          ventas: 620,
           hijos: [
-            { id: 7, nombre: "Diana Paz", nivel: 3, ventas: 300 },
+            { id: 7, nombre: "Diana Paz", nivel: 3, ventas: 380 },
+            { id: 10, nombre: "Elena Vargas", nivel: 3, ventas: 210 },
           ],
         },
-        { id: 5, nombre: "Sofía León", nivel: 2, ventas: 430 },
+        {
+          id: 5,
+          nombre: "Sofía León",
+          nivel: 2,
+          ventas: 510,
+          hijos: [
+            { id: 11, nombre: "Pedro Alvarado", nivel: 3, ventas: 175 },
+          ],
+        },
       ],
     },
     {
       id: 2,
       nombre: "Luis Poveda",
       nivel: 1,
-      ventas: 850,
+      ventas: 980,
       hijos: [
-        { id: 6, nombre: "Marco Díaz", nivel: 2, ventas: 380 },
+        { id: 6, nombre: "Marco Díaz", nivel: 2, ventas: 440 },
+        { id: 12, nombre: "Valeria Mendoza", nivel: 2, ventas: 290 },
       ],
     },
-    { id: 3, nombre: "Marta Sánchez", nivel: 1, ventas: 430 },
+    {
+      id: 3,
+      nombre: "Marta Sánchez",
+      nivel: 1,
+      ventas: 560,
+      hijos: [
+        { id: 13, nombre: "Jorge Castillo", nivel: 2, ventas: 320 },
+      ],
+    },
+    {
+      id: 8,
+      nombre: "Andrea Torres",
+      nivel: 1,
+      ventas: 720,
+      hijos: [
+        { id: 14, nombre: "Ricardo Peña", nivel: 2, ventas: 265 },
+      ],
+    },
+    {
+      id: 9,
+      nombre: "Felipe Ríos",
+      nivel: 1,
+      ventas: 410,
+    },
   ],
 };
 

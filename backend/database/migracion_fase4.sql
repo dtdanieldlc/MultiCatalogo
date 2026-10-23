@@ -55,3 +55,51 @@ CREATE INDEX IF NOT EXISTS idx_comisiones_pedido ON comisiones(pedido_id);
 -- por lo que sus compras generan comisión para Carlos Ruiz (10 %), Ana García (5 %) y "Tú" (2 %).
 UPDATE usuarios SET referido_id = 0 WHERE email = 'admin@upse.edu.ec'   AND referido_id IS NULL;
 UPDATE usuarios SET referido_id = 7 WHERE email = 'cliente@upse.edu.ec' AND referido_id IS NULL;
+UPDATE usuarios SET referido_id = 1 WHERE email = 'ana@dtlc.com'        AND referido_id IS NULL;
+UPDATE usuarios SET referido_id = 2 WHERE email = 'luis@dtlc.com'       AND referido_id IS NULL;
+UPDATE usuarios SET referido_id = 3 WHERE email = 'marta@dtlc.com'      AND referido_id IS NULL;
+UPDATE usuarios SET referido_id = 7 WHERE email = 'diana@dtlc.com'      AND referido_id IS NULL;
+UPDATE usuarios SET referido_id = 8 WHERE email = 'andrea@dtlc.com'     AND referido_id IS NULL;
+
+-- Pedidos de ejemplo (solo si la tabla está vacía) para pantallas de MisPedidos / AdminPedidos
+INSERT INTO pedidos (usuario_id, cliente_nombre, cliente_email, direccion, ciudad, telefono, metodo_pago, total, estado, comisiones_calculadas)
+SELECT u.id, 'Cliente Demo', 'cliente@upse.edu.ec', 'Av. Principal 120', 'Guayaquil', '0991234567', 'tarjeta', 103.50, 'enviado', true
+FROM usuarios u WHERE u.email = 'cliente@upse.edu.ec'
+  AND NOT EXISTS (SELECT 1 FROM pedidos LIMIT 1);
+
+INSERT INTO pedido_items (pedido_id, producto_id, cantidad, precio_unitario)
+SELECT p.id, 1, 1, 45.00 FROM pedidos p WHERE p.cliente_email = 'cliente@upse.edu.ec' AND p.total = 103.50
+  AND NOT EXISTS (SELECT 1 FROM pedido_items WHERE pedido_id = p.id)
+UNION ALL
+SELECT p.id, 2, 1, 32.50 FROM pedidos p WHERE p.cliente_email = 'cliente@upse.edu.ec' AND p.total = 103.50
+  AND NOT EXISTS (SELECT 1 FROM pedido_items pi JOIN productos pr ON pr.id = pi.producto_id WHERE pi.pedido_id = p.id AND pr.id = 2)
+UNION ALL
+SELECT p.id, 6, 1, 26.00 FROM pedidos p WHERE p.cliente_email = 'cliente@upse.edu.ec' AND p.total = 103.50
+  AND NOT EXISTS (SELECT 1 FROM pedido_items pi JOIN productos pr ON pr.id = pi.producto_id WHERE pi.pedido_id = p.id AND pr.id = 6);
+
+INSERT INTO pedidos (usuario_id, cliente_nombre, cliente_email, direccion, ciudad, telefono, metodo_pago, total, estado, comisiones_calculadas)
+SELECT u.id, 'Ana García', 'ana@dtlc.com', 'Calle 9 de Octubre 45', 'Cuenca', '0987654321', 'transferencia', 167.00, 'pagado', true
+FROM usuarios u WHERE u.email = 'ana@dtlc.com'
+  AND NOT EXISTS (SELECT 1 FROM pedidos WHERE cliente_email = 'ana@dtlc.com');
+
+INSERT INTO pedido_items (pedido_id, producto_id, cantidad, precio_unitario)
+SELECT p.id, 8, 1, 129.00 FROM pedidos p WHERE p.cliente_email = 'ana@dtlc.com'
+  AND NOT EXISTS (SELECT 1 FROM pedido_items WHERE pedido_id = p.id)
+UNION ALL
+SELECT p.id, 10, 1, 38.00 FROM pedidos p WHERE p.cliente_email = 'ana@dtlc.com'
+  AND NOT EXISTS (SELECT 1 FROM pedido_items pi WHERE pi.pedido_id = p.id AND pi.producto_id = 10);
+
+INSERT INTO pedidos (usuario_id, cliente_nombre, cliente_email, direccion, ciudad, telefono, metodo_pago, total, estado, comisiones_calculadas)
+SELECT u.id, 'Diana Paz', 'diana@dtlc.com', 'Av. Amazonas 890', 'Quito', '0971112233', 'efectivo', 80.00, 'entregado', true
+FROM usuarios u WHERE u.email = 'diana@dtlc.com'
+  AND NOT EXISTS (SELECT 1 FROM pedidos WHERE cliente_email = 'diana@dtlc.com');
+
+INSERT INTO pedido_items (pedido_id, producto_id, cantidad, precio_unitario)
+SELECT p.id, 4, 1, 50.00 FROM pedidos p WHERE p.cliente_email = 'diana@dtlc.com'
+  AND NOT EXISTS (SELECT 1 FROM pedido_items WHERE pedido_id = p.id)
+UNION ALL
+SELECT p.id, 9, 1, 22.00 FROM pedidos p WHERE p.cliente_email = 'diana@dtlc.com'
+  AND NOT EXISTS (SELECT 1 FROM pedido_items pi WHERE pi.pedido_id = p.id AND pi.producto_id = 9)
+UNION ALL
+SELECT p.id, 3, 1, 28.00 FROM pedidos p WHERE p.cliente_email = 'diana@dtlc.com'
+  AND NOT EXISTS (SELECT 1 FROM pedido_items pi WHERE pi.pedido_id = p.id AND pi.producto_id = 3);

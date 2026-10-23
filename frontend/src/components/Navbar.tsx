@@ -47,7 +47,7 @@ const Navbar = ({ toggleSidebar }: NavbarProps) => {
           <Icon name="menu" className="h-6 w-6" />
         </button>
         <p className="hidden text-sm font-medium text-ink-500 sm:block">
-          {user?.rol === "admin" ? "Panel de administración" : "Tienda MultiCatálogo"}
+          {user?.rol === "admin" ? "Panel de administración DTLC" : "Tienda DTLC MultiCatálogo"}
         </p>
       </div>
 

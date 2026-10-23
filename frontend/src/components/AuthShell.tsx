@@ -31,7 +31,7 @@ const AuthShell = ({ title, subtitle, children }: { title: string; subtitle: str
           )}
         </ul>
       </div>
-      <p className="relative text-sm text-brand-200/80">© MultiCatálogo</p>
+      <p className="relative text-sm text-brand-200/80">© DTLC MultiCatálogo</p>
     </aside>
 
     {/* Formulario */}

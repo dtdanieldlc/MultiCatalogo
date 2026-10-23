@@ -71,8 +71,8 @@ const Sidebar = ({ isCollapsed, isMobileOpen, closeMobileMenu }: SidebarProps) =
     >
       <div className={`flex h-16 items-center border-b border-ink-100 px-5 ${isCollapsed ? "md:justify-center md:px-0" : ""}`}>
         {isCollapsed ? (
-          <span className="hidden h-9 w-9 items-center justify-center rounded-full bg-brand-600 font-display font-semibold text-white md:flex">
-            M
+          <span className="hidden h-9 w-9 items-center justify-center rounded-full bg-brand-600 font-display text-[11px] font-bold tracking-tight text-white md:flex">
+            DTLC
           </span>
         ) : null}
         <span className={isCollapsed ? "md:hidden" : ""}>

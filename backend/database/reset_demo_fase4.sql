@@ -5,5 +5,9 @@
 TRUNCATE comisiones, pedido_items, pedidos RESTART IDENTITY;
 UPDATE productos SET stock = 100;
 UPDATE referidos r SET saldo = 0, ventas = v.ventas
-FROM (VALUES (0,2400),(1,1200),(2,850),(3,430),(4,500),(5,430),(6,380),(7,300)) AS v(id, ventas)
+FROM (VALUES
+  (0, 3200), (1, 1450), (2, 980), (3, 560), (8, 720), (9, 410),
+  (4, 620), (5, 510), (6, 440), (12, 290), (13, 320), (14, 265),
+  (7, 380), (10, 210), (11, 175)
+) AS v(id, ventas)
 WHERE r.id = v.id;
