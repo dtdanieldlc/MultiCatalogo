@@ -161,14 +161,27 @@ export const StatusBadge = ({ estado }: { estado: string }) => (
 export const Logo = ({ light = false }: { light?: boolean }) => (
   <span className="inline-flex items-center gap-2.5">
     <span
-      className={`flex h-9 w-9 items-center justify-center rounded-full font-display text-base font-semibold ${
+      className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full font-display text-base font-semibold ${
         light ? "bg-white text-brand-700" : "bg-brand-600 text-white"
       }`}
     >
       M
     </span>
-    <span className={`font-display text-xl font-semibold tracking-tight ${light ? "text-white" : "text-ink-900"}`}>
-      MultiCatálogo - DANIEL DT
+    <span className="flex flex-col leading-none">
+      <span
+        className={`font-display text-xl font-semibold tracking-tight ${
+          light ? "text-white" : "text-ink-900"
+        }`}
+      >
+        MultiCatálogo
+      </span>
+      <span
+        className={`mt-1.5 font-display text-[9px] font-medium uppercase tracking-[0.32em] ${
+          light ? "text-brand-200" : "text-brand-600"
+        }`}
+      >
+        De la Cruz Daniel
+      </span>
     </span>
   </span>
 );
