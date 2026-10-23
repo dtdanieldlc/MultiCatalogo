@@ -38,11 +38,18 @@ func (r *PostgresRepo) ListUsuariosAdmin(ctx context.Context, q, rol string, pag
 	args = append(args, limit, offset)
 	limIdx, offIdx := len(args)-1, len(args)
 
+	// Query robusta: creado_en puede no existir en installs viejas → usamos COALESCE con now()
 	rows, err := r.db.QueryContext(ctx, fmt.Sprintf(`
-		SELECT u.id, u.email, u.rol, COALESCE(u.nombre,''), COALESCE(u.activo,true),
-		       u.referido_id, COALESCE(r.codigo,''), COALESCE(u.creado_en, now()),
-		       COALESCE((SELECT COUNT(*) FROM pedidos p WHERE p.usuario_id = u.id), 0),
-		       COALESCE((SELECT SUM(p.total) FROM pedidos p WHERE p.usuario_id = u.id AND COALESCE(p.estado,'') <> 'cancelado'), 0)
+		SELECT u.id,
+		       u.email,
+		       u.rol,
+		       COALESCE(u.nombre, ''),
+		       COALESCE(u.activo, true),
+		       u.referido_id,
+		       COALESCE(r.codigo, ''),
+		       COALESCE(u.creado_en, now()),
+		       COALESCE((SELECT COUNT(*)::int FROM pedidos p WHERE p.usuario_id = u.id), 0),
+		       COALESCE((SELECT SUM(p.total) FROM pedidos p WHERE p.usuario_id = u.id AND COALESCE(p.estado,'') <> 'cancelado'), 0)::float8
 		FROM usuarios u
 		LEFT JOIN referidos r ON r.id = u.referido_id
 		%s
@@ -53,7 +60,7 @@ func (r *PostgresRepo) ListUsuariosAdmin(ctx context.Context, q, rol string, pag
 	}
 	defer rows.Close()
 
-	out := []models.UsuarioAdmin{}
+	out := make([]models.UsuarioAdmin, 0)
 	for rows.Next() {
 		var u models.UsuarioAdmin
 		var refID sql.NullInt64
@@ -88,8 +95,8 @@ func (r *PostgresRepo) SetUsuarioActivo(ctx context.Context, id int, activo bool
 	err = r.db.QueryRowContext(ctx, `
 		SELECT u.id, u.email, u.rol, COALESCE(u.nombre,''), COALESCE(u.activo,true),
 		       u.referido_id, COALESCE(r.codigo,''), COALESCE(u.creado_en, now()),
-		       COALESCE((SELECT COUNT(*) FROM pedidos p WHERE p.usuario_id = u.id), 0),
-		       COALESCE((SELECT SUM(p.total) FROM pedidos p WHERE p.usuario_id = u.id AND COALESCE(p.estado,'') <> 'cancelado'), 0)
+		       COALESCE((SELECT COUNT(*)::int FROM pedidos p WHERE p.usuario_id = u.id), 0),
+		       COALESCE((SELECT SUM(p.total) FROM pedidos p WHERE p.usuario_id = u.id AND COALESCE(p.estado,'') <> 'cancelado'), 0)::float8
 		FROM usuarios u
 		LEFT JOIN referidos r ON r.id = u.referido_id
 		WHERE u.id = $1`, id).Scan(

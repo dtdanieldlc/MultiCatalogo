@@ -41,8 +41,16 @@ const AdminUsuarios = () => {
         const params = new URLSearchParams({ page: "1", limit: "50" });
         if (busqueda.trim()) params.set("q", busqueda.trim());
         if (filtroRol) params.set("rol", filtroRol);
-        const data = await apiFetch<Pagina>(`/api/admin/usuarios?${params}`);
-        setPagina(data);
+        const raw = await apiFetch<Pagina | UsuarioAdmin[]>(`/api/admin/usuarios?${params}`);
+        // Soporta { data, total } o array plano
+        if (Array.isArray(raw)) {
+          setPagina({ data: raw, page: 1, limit: raw.length, total: raw.length });
+        } else if (raw && Array.isArray((raw as Pagina).data)) {
+          setPagina(raw as Pagina);
+        } else {
+          setPagina({ data: [], page: 1, limit: 50, total: 0 });
+          setError("Respuesta inesperada del servidor");
+        }
       } catch (e) {
         setError(e instanceof ApiError ? e.message : "Error al cargar usuarios");
       } finally {

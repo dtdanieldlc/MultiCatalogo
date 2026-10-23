@@ -62,10 +62,6 @@ func run() error {
 		return err
 	}
 
-	if err := config.Migrate(db, "imagenes", database.MigracionImagenes); err != nil {
-		log.Fatalf("migración imágenes: %v", err)
-	}
-
 	// Redis (Fase 3): si no está disponible, se inyecta un caché nulo y la API sigue
 	// funcionando (todas las lecturas van a PostgreSQL).
 	var cache repository.CacheRepository = repository.NopCache{}
@@ -104,6 +100,7 @@ func run() error {
 		Register:     controllers.NewRegisterController(repo),
 		Producto:     controllers.NewProductoController(repo, cache),
 		ProductoAdmin: controllers.NewProductoAdminController(repo, cache),
+		UsuariosAdmin: controllers.NewUsuariosAdminController(repo),
 		Red:          controllers.NewRedController(repo, cache),
 		Checkout:     checkout,
 		Pedidos:      controllers.NewPedidosController(repo, cache),
