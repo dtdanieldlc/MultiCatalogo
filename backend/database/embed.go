@@ -3,6 +3,11 @@ package database
 
 import _ "embed"
 
+// MigracionSchema crea tablas base + semilla en BD vacías (Render/Railway).
+//
+//go:embed 001_schema.sql
+var MigracionSchema string
+
 // MigracionFase4 crea/actualiza las tablas de pedidos y comisiones (idempotente).
 //
 //go:embed migracion_fase4.sql

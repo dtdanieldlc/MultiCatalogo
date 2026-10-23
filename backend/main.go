@@ -44,6 +44,10 @@ func run() error {
 		}
 	}()
 
+	// Esquema base (usuarios, productos, referidos + semilla) si la BD está vacía.
+	if err := config.Migrate(db, "schema", database.MigracionSchema); err != nil {
+		return err
+	}
 	// Fase 4: crea/actualiza pedidos, pedido_items, comisiones, stock... (idempotente).
 	if err := config.Migrate(db, "fase4", database.MigracionFase4); err != nil {
 		return err
@@ -109,11 +113,13 @@ func run() error {
 	// recover evita que un panic tumbe el servidor (lo convierte en un 500 estandarizado).
 	app.Use(recover.New())
 
+	// CORS: Vite dev (:5173) y preview PWA (:4173). En aula también IPs de la LAN.
 	app.Use(cors.New(cors.Config{
 		AllowOrigins: "http://localhost:5173, http://127.0.0.1:5173, http://localhost:4173, http://127.0.0.1:4173, http://192.168.110.84:5173, http://192.168.110.84:4173, http://192.168.56.1:4173, http://192.168.56.1:5173",
 		AllowHeaders: "Origin, Content-Type, Accept, Authorization",
+		// Permite que el navegador (fetch) lea X-Cache: HIT | MISS.
 		ExposeHeaders: "X-Cache",
-		}))
+	}))
 
 	routes.SetupRoutes(app, handlers)
 
