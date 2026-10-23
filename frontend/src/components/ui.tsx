@@ -168,7 +168,7 @@ export const Logo = ({ light = false }: { light?: boolean }) => (
       M
     </span>
     <span className={`font-display text-xl font-semibold tracking-tight ${light ? "text-white" : "text-ink-900"}`}>
-      MultiCatálogo
+      MultiCatálogo - DANIEL DT
     </span>
   </span>
 );
