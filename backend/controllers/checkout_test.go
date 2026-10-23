@@ -66,6 +66,13 @@ func (r *repoFalso) GetUsuarioByID(context.Context, int) (models.Usuario, bool, 
 func (r *repoFalso) RegistrarUsuario(context.Context, string, string, string, string) (models.Usuario, error) {
 	return models.Usuario{}, nil
 }
+func (r *repoFalso) ListUsuariosAdmin(context.Context, string, string, int, int) ([]models.UsuarioAdmin, int, error) {
+	return nil, 0, nil
+}
+func (r *repoFalso) SetUsuarioActivo(context.Context, int, bool) (models.UsuarioAdmin, error) {
+	return models.UsuarioAdmin{}, nil
+}
+
 func (r *repoFalso) ListProductosAdmin(context.Context, string, int, int) ([]models.ProductoAdmin, int, error) {
 	return nil, 0, nil
 }

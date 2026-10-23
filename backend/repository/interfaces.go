@@ -13,6 +13,8 @@ type DBRepository interface {
 	FindUsuarioByToken(ctx context.Context, token string) (models.Usuario, bool, error)
 	GetUsuarioByID(ctx context.Context, id int) (models.Usuario, bool, error)
 	RegistrarUsuario(ctx context.Context, nombre, email, password, ref string) (models.Usuario, error)
+	ListUsuariosAdmin(ctx context.Context, q, rol string, page, limit int) ([]models.UsuarioAdmin, int, error)
+	SetUsuarioActivo(ctx context.Context, id int, activo bool) (models.UsuarioAdmin, error)
 
 	GetProductos(ctx context.Context) ([]models.Producto, error)
 	GetProductoByID(ctx context.Context, id int) (models.Producto, bool, error)

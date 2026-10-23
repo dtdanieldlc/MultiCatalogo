@@ -19,6 +19,7 @@ type Controllers struct {
 	Pedidos       *controllers.PedidosController
 	MLM           *controllers.MLMController
 	Reportes      *controllers.ReportesController
+	UsuariosAdmin *controllers.UsuariosAdminController
 	Health        *controllers.HealthController
 }
 
@@ -46,6 +47,9 @@ func SetupRoutes(app *fiber.App, c Controllers) {
 	app.Get("/api/liquidaciones/mias", auth, c.MLM.LiquidacionesMias)
 
 	// Admin
+	app.Get("/api/admin/usuarios", auth, admin, c.UsuariosAdmin.List)
+	app.Patch("/api/admin/usuarios/:id/activo", auth, admin, c.UsuariosAdmin.SetActivo)
+
 	app.Get("/api/admin/productos", auth, admin, c.ProductoAdmin.List)
 	app.Post("/api/productos", auth, admin, c.ProductoAdmin.Create)
 	app.Put("/api/productos/:id", auth, admin, c.ProductoAdmin.Update)

@@ -56,6 +56,20 @@ type Usuario struct {
 	CreadoEn   time.Time
 }
 
+// UsuarioAdmin es la vista pública de un usuario para el panel admin (sin password).
+type UsuarioAdmin struct {
+	ID            int       `json:"id"`
+	Email         string    `json:"email"`
+	Rol           string    `json:"rol"`
+	Nombre        string    `json:"nombre"`
+	Activo        bool      `json:"activo"`
+	ReferidoID    *int      `json:"referidoId,omitempty"`
+	CodigoRef     string    `json:"codigoRef,omitempty"`
+	CreadoEn      time.Time `json:"creadoEn"`
+	Pedidos       int       `json:"pedidos"`
+	TotalComprado float64   `json:"totalComprado"`
+}
+
 // RegisterRequest es el cuerpo de POST /api/register.
 type RegisterRequest struct {
 	Nombre   string `json:"nombre"`

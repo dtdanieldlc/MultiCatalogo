@@ -24,6 +24,7 @@ const NAV_ITEMS: NavItem[] = [
   { to: "/mi-red", label: "Mi Red", title: "Mi Red", icon: "users" },
   { to: "/mis-pedidos", label: "Mis pedidos", title: "Mis pedidos", icon: "clipboard" },
   { to: "/favoritos", label: "Favoritos", title: "Favoritos", icon: "heart" },
+  { to: "/admin/usuarios", label: "Usuarios", title: "Admin usuarios", icon: "users", soloAdmin: true },
   { to: "/admin/productos", label: "Productos", title: "Admin productos", icon: "box", soloAdmin: true },
   { to: "/admin/pedidos", label: "Pedidos", title: "Admin pedidos", icon: "doc", soloAdmin: true },
   { to: "/admin/liquidaciones", label: "Liquidaciones", title: "Liquidaciones", icon: "coin", soloAdmin: true },

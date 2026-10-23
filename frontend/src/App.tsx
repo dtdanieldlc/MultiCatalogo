@@ -14,6 +14,7 @@ import Login from './components/Login';
 import Registro from './components/Registro';
 import MisPedidos from './components/MisPedidos';
 import Favoritos from "./components/Favoritos";
+import AdminUsuarios from "./components/AdminUsuarios";
 import AdminProductos from './components/AdminProductos';
 import AdminPedidos from './components/AdminPedidos';
 import AdminLiquidaciones from './components/AdminLiquidaciones';
@@ -83,6 +84,7 @@ function App() {
                 {/* Solo administrador: Dashboard y Red multinivel */}
                 <Route element={<AdminRoute />}>
                   <Route index element={<Dashboard />} />
+                  <Route path="admin/usuarios" element={<AdminUsuarios />} />
                   <Route path="admin/productos" element={<AdminProductos />} />
                   <Route path="admin/pedidos" element={<AdminPedidos />} />
                   <Route path="admin/liquidaciones" element={<AdminLiquidaciones />} />
