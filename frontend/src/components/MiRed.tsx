@@ -1,6 +1,7 @@
 // Mi Red — subárbol del usuario + link de invitación + ledger de comisiones
 import { useEffect, useState } from 'react';
 import { apiFetch, ApiError } from '../services/http';
+import { Alert, Icon, PageHeader, PageLoading, StatusBadge, money } from './ui';
 
 interface Referido {
   id: number;
@@ -37,17 +38,15 @@ interface ComisionesResumen {
 
 function Nodo({ n, depth = 0 }: { n: Referido; depth?: number }) {
   return (
-    <li className="mt-2">
-      <div
-        className="flex flex-wrap items-center gap-2 text-sm"
-        style={{ marginLeft: depth * 12 }}
-      >
-        <span className="font-semibold text-slate-800">{n.nombre}</span>
-        <span className="text-xs text-slate-500">N{n.nivel}</span>
-        <span className="text-xs text-indigo-600">${n.ventas.toLocaleString()}</span>
-        {typeof n.saldo === 'number' && (
-          <span className="text-xs text-green-600">saldo ${n.saldo.toFixed(2)}</span>
-        )}
+    <li className={depth > 0 ? 'relative ml-4 border-l border-ink-200 pl-4 sm:ml-6 sm:pl-6' : ''}>
+      <div className="my-2 flex flex-wrap items-center gap-x-3 gap-y-1 rounded-xl bg-sand/70 px-4 py-3 text-sm">
+        <span className="flex h-8 w-8 items-center justify-center rounded-full bg-ink-900 text-xs font-semibold text-white">
+          {n.nombre.charAt(0).toUpperCase()}
+        </span>
+        <span className="font-semibold text-ink-900">{n.nombre}</span>
+        <span className="badge bg-white text-ink-600">Nivel {n.nivel}</span>
+        <span className="text-xs font-medium text-brand-700">ventas {money(n.ventas)}</span>
+        {typeof n.saldo === 'number' && <span className="text-xs font-medium text-leaf-600">saldo {money(n.saldo)}</span>}
       </div>
       {n.hijos && n.hijos.length > 0 && (
         <ul>
@@ -106,97 +105,90 @@ const MiRed = () => {
     }
   };
 
-  if (loading) return <p className="p-4 text-slate-500">Cargando tu red…</p>;
+  if (loading) return <PageLoading label="Cargando tu red…" />;
+
+  const resumen = coms
+    ? [
+        { k: 'Pendiente', v: coms.pendiente, c: 'bg-gold-50 text-gold-700' },
+        { k: 'Pagado', v: coms.pagado, c: 'bg-leaf-50 text-leaf-700' },
+        { k: 'Total', v: coms.total, c: 'bg-sand text-ink-800' },
+      ]
+    : [];
 
   return (
-    <div className="p-4 max-w-4xl mx-auto space-y-6">
-      <h1 className="text-2xl font-bold text-slate-900">Mi Red</h1>
+    <div className="mx-auto max-w-4xl space-y-6">
+      <PageHeader eyebrow="Tu comunidad" title="Mi red" subtitle="Invita personas, mira tu árbol y controla tus comisiones." />
 
-      {error && (
-        <div className="bg-red-50 text-red-600 border border-red-200 rounded-lg p-3 text-sm">
-          {error}
-        </div>
-      )}
+      {error && <Alert>{error}</Alert>}
 
-      <section className="bg-white border border-slate-200 rounded-lg p-4">
-        <h2 className="font-bold text-slate-800 mb-2">Tu link de referido</h2>
-        <p className="text-sm text-slate-500 mb-3">
-          Comparte este enlace para que nuevos clientes cuelguen de tu nodo.
-        </p>
-        <div className="flex flex-col sm:flex-row gap-2">
-          <input
-            readOnly
-            className="flex-1 border border-slate-300 rounded-lg px-3 py-3 text-sm min-h-[44px] bg-slate-50"
-            value={linkCompleto}
-          />
-          <button
-            type="button"
-            onClick={() => void copiar()}
-            className="bg-indigo-600 text-white font-semibold px-4 py-3 rounded-lg min-h-[44px] hover:bg-indigo-700"
-          >
-            {copiado ? '¡Copiado!' : 'Copiar'}
-          </button>
+      <section className="card relative overflow-hidden p-6">
+        <div className="absolute -right-10 -top-10 h-40 w-40 rounded-full bg-brand-100 blur-2xl" />
+        <div className="relative">
+          <h2 className="font-display text-xl font-semibold">Tu enlace de referido</h2>
+          <p className="mb-4 mt-1 text-sm text-ink-500">Comparte este enlace para que nuevos clientes cuelguen de tu nodo.</p>
+          <div className="flex flex-col gap-2 sm:flex-row">
+            <div className="relative flex-1">
+              <Icon name="link" className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-ink-400" />
+              <input readOnly aria-label="Enlace de referido" className="input bg-sand pl-11 text-sm" value={linkCompleto} />
+            </div>
+            <button type="button" onClick={() => void copiar()} className={`btn ${copiado ? 'bg-leaf-600 text-white' : 'btn-dark'}`}>
+              <Icon name={copiado ? 'check' : 'copy'} className="h-4 w-4" />
+              {copiado ? '¡Copiado!' : 'Copiar'}
+            </button>
+          </div>
+          {redMia?.codigo && (
+            <p className="mt-3 text-xs text-ink-500">
+              Código: <span className="rounded-md bg-sand px-1.5 py-0.5 font-mono font-semibold text-ink-800">{redMia.codigo}</span>
+            </p>
+          )}
         </div>
-        {redMia?.codigo && (
-          <p className="text-xs text-slate-500 mt-2">
-            Código: <span className="font-mono font-semibold">{redMia.codigo}</span>
-          </p>
-        )}
       </section>
 
-      <section className="bg-white border border-slate-200 rounded-lg p-4">
-        <h2 className="font-bold text-slate-800 mb-3">Tu subárbol</h2>
+      <section className="card p-6">
+        <h2 className="mb-4 font-display text-xl font-semibold">Tu subárbol</h2>
         {redMia?.red ? (
           <ul>
             <Nodo n={redMia.red} />
           </ul>
         ) : (
-          <p className="text-slate-500 text-sm">No tienes nodo en la red aún</p>
+          <p className="text-sm text-ink-500">No tienes nodo en la red aún</p>
         )}
       </section>
 
-      <section className="bg-white border border-slate-200 rounded-lg p-4">
-        <h2 className="font-bold text-slate-800 mb-3">Mis comisiones</h2>
+      <section className="card p-6">
+        <h2 className="mb-4 font-display text-xl font-semibold">Mis comisiones</h2>
         {coms && (
-          <div className="grid grid-cols-3 gap-3 mb-4 text-center">
-            <div className="bg-amber-50 rounded-lg p-3">
-              <p className="text-xs text-amber-700 uppercase font-semibold">Pendiente</p>
-              <p className="text-lg font-bold text-amber-800">${coms.pendiente.toFixed(2)}</p>
-            </div>
-            <div className="bg-green-50 rounded-lg p-3">
-              <p className="text-xs text-green-700 uppercase font-semibold">Pagado</p>
-              <p className="text-lg font-bold text-green-800">${coms.pagado.toFixed(2)}</p>
-            </div>
-            <div className="bg-slate-50 rounded-lg p-3">
-              <p className="text-xs text-slate-600 uppercase font-semibold">Total</p>
-              <p className="text-lg font-bold text-slate-800">${coms.total.toFixed(2)}</p>
-            </div>
+          <div className="mb-6 grid grid-cols-3 gap-3 text-center">
+            {resumen.map((r) => (
+              <div key={r.k} className={`rounded-2xl p-3 sm:p-4 ${r.c}`}>
+                <p className="text-[11px] font-semibold uppercase tracking-wider opacity-80">{r.k}</p>
+                <p className="mt-1 font-display text-xl font-semibold sm:text-2xl">{money(r.v)}</p>
+              </div>
+            ))}
           </div>
         )}
         {!coms?.items?.length ? (
-          <p className="text-slate-500 text-sm">Aún no hay comisiones registradas</p>
+          <p className="text-sm text-ink-500">Aún no hay comisiones registradas</p>
         ) : (
-          <div className="overflow-x-auto">
+          <div className="-mx-2 overflow-x-auto">
             <table className="min-w-full text-sm">
-              <thead className="text-left text-slate-500">
-                <tr>
-                  <th className="py-2 pr-3">Pedido</th>
-                  <th className="py-2 pr-3">Nivel</th>
-                  <th className="py-2 pr-3">%</th>
-                  <th className="py-2 pr-3">Monto</th>
-                  <th className="py-2">Estado</th>
+              <thead>
+                <tr className="border-b border-ink-100">
+                  <th className="th">Pedido</th>
+                  <th className="th">Nivel</th>
+                  <th className="th">%</th>
+                  <th className="th">Monto</th>
+                  <th className="th">Estado</th>
                 </tr>
               </thead>
-              <tbody>
+              <tbody className="divide-y divide-ink-100">
                 {coms.items.map((c) => (
-                  <tr key={c.id} className="border-t border-slate-100">
-                    <td className="py-2 pr-3">{c.pedidoNumero || c.pedidoId}</td>
-                    <td className="py-2 pr-3">{c.nivel}</td>
-                    <td className="py-2 pr-3">{(c.porcentaje * 100).toFixed(0)}%</td>
-                    <td className="py-2 pr-3 font-semibold">${c.monto.toFixed(2)}</td>
-                    <td className="py-2">
-                      <span className="text-xs font-semibold uppercase">{c.estado}</span>
-                    </td>
+                  <tr key={c.id}>
+                    <td className="td font-mono text-xs">{c.pedidoNumero || c.pedidoId}</td>
+                    <td className="td">{c.nivel}</td>
+                    <td className="td">{(c.porcentaje * 100).toFixed(0)}%</td>
+                    <td className="td font-semibold">{money(c.monto)}</td>
+                    <td className="td"><StatusBadge estado={c.estado} /></td>
                   </tr>
                 ))}
               </tbody>

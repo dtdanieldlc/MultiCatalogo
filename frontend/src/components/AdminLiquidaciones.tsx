@@ -1,6 +1,7 @@
 // /admin/liquidaciones — deudas pendientes + historial
 import { useCallback, useEffect, useState } from 'react';
 import { apiFetch, ApiError } from '../services/http';
+import { Alert, EmptyState, PageHeader, PageLoading, money } from './ui';
 
 interface Deuda {
   referidoId: number;
@@ -65,46 +66,54 @@ const AdminLiquidaciones = () => {
     }
   };
 
-  return (
-    <div className="p-4 max-w-4xl mx-auto">
-      <h1 className="text-2xl font-bold text-slate-900 mb-6">Liquidaciones</h1>
+  const totalDeuda = deudas.reduce((acc, d) => acc + d.pendiente, 0);
 
-      {error && (
-        <div className="bg-red-50 text-red-600 border border-red-200 rounded-lg p-3 mb-4 text-sm">
-          {error}
-        </div>
-      )}
+  return (
+    <div className="mx-auto max-w-4xl">
+      <PageHeader
+        eyebrow="Administración"
+        title="Liquidaciones"
+        subtitle="Paga las comisiones acumuladas de tu red."
+        action={
+          deudas.length > 0 ? (
+            <div className="rounded-2xl bg-gold-50 px-5 py-3 text-right">
+              <p className="text-[11px] font-semibold uppercase tracking-wider text-gold-700">Deuda total</p>
+              <p className="font-display text-2xl font-semibold text-gold-700">{money(totalDeuda)}</p>
+            </div>
+          ) : undefined
+        }
+      />
+
+      {error && <Alert>{error}</Alert>}
 
       {loading ? (
-        <p className="text-slate-500">Cargando…</p>
+        <PageLoading />
       ) : (
-        <>
-          <section className="mb-8">
-            <h2 className="text-lg font-bold text-slate-800 mb-3">Deuda pendiente</h2>
+        <div className="space-y-10">
+          <section>
+            <h2 className="mb-4 font-display text-xl font-semibold">Deuda pendiente</h2>
             {deudas.length === 0 ? (
-              <p className="text-slate-500 bg-white border border-slate-200 rounded-lg p-6 text-center">
-                No hay comisiones pendientes de liquidar
-              </p>
+              <EmptyState icon="coin" title="Todo al día" text="No hay comisiones pendientes de liquidar." />
             ) : (
               <ul className="space-y-3">
                 {deudas.map((d) => (
-                  <li
-                    key={d.referidoId}
-                    className="bg-white border border-slate-200 rounded-lg p-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3"
-                  >
-                    <div>
-                      <p className="font-semibold text-slate-900">{d.nombre}</p>
-                      <p className="text-sm text-slate-500">Código: {d.codigo || '—'}</p>
-                    </div>
+                  <li key={d.referidoId} className="card flex flex-col gap-4 p-5 sm:flex-row sm:items-center sm:justify-between">
                     <div className="flex items-center gap-3">
-                      <span className="text-xl font-bold text-amber-600">
-                        ${d.pendiente.toFixed(2)}
+                      <span className="flex h-11 w-11 items-center justify-center rounded-full bg-ink-900 font-semibold text-white">
+                        {d.nombre.charAt(0).toUpperCase()}
                       </span>
+                      <div>
+                        <p className="font-semibold text-ink-900">{d.nombre}</p>
+                        <p className="text-sm text-ink-500">Código: {d.codigo || '—'}</p>
+                      </div>
+                    </div>
+                    <div className="flex items-center justify-between gap-4 sm:justify-end">
+                      <span className="font-display text-2xl font-semibold text-gold-700">{money(d.pendiente)}</span>
                       <button
                         type="button"
                         disabled={busy === d.referidoId}
                         onClick={() => void liquidar(d.referidoId, d.nombre)}
-                        className="bg-indigo-600 text-white font-semibold px-4 py-3 rounded-lg min-h-[44px] hover:bg-indigo-700 disabled:opacity-50"
+                        className="btn btn-primary"
                       >
                         {busy === d.referidoId ? 'Liquidando…' : 'Liquidar'}
                       </button>
@@ -116,27 +125,25 @@ const AdminLiquidaciones = () => {
           </section>
 
           <section>
-            <h2 className="text-lg font-bold text-slate-800 mb-3">Historial de pagos</h2>
+            <h2 className="mb-4 font-display text-xl font-semibold">Historial de pagos</h2>
             {historial.length === 0 ? (
-              <p className="text-slate-500 text-sm">Aún no hay liquidaciones registradas</p>
+              <p className="text-sm text-ink-500">Aún no hay liquidaciones registradas</p>
             ) : (
-              <ul className="space-y-2">
+              <ul className="card divide-y divide-ink-100">
                 {historial.map((l) => (
-                  <li
-                    key={l.id}
-                    className="bg-white border border-slate-100 rounded-lg p-3 flex justify-between text-sm"
-                  >
-                    <span>
-                      #{l.id} · {l.nombre || `Referido ${l.referidoId}`} ·{' '}
-                      {new Date(l.creadoEn).toLocaleDateString()}
+                  <li key={l.id} className="flex items-center justify-between gap-3 px-5 py-4 text-sm">
+                    <span className="text-ink-700">
+                      <span className="font-mono text-xs text-ink-400">#{l.id}</span>{' '}
+                      <span className="font-medium text-ink-900">{l.nombre || `Referido ${l.referidoId}`}</span>
+                      <span className="block text-xs text-ink-500 sm:ml-2 sm:inline">{new Date(l.creadoEn).toLocaleDateString()}</span>
                     </span>
-                    <span className="font-semibold text-green-700">${l.total.toFixed(2)}</span>
+                    <span className="font-semibold text-leaf-700">{money(l.total)}</span>
                   </li>
                 ))}
               </ul>
             )}
           </section>
-        </>
+        </div>
       )}
     </div>
   );

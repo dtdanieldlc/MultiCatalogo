@@ -31,6 +31,10 @@ func LoadEnv() {
 
 // dsn arma la cadena de conexión escapando usuario y contraseña correctamente.
 func dsn() string {
+	// Render (y otros PaaS) entregan la conexión completa en DATABASE_URL.
+	if v := os.Getenv("DATABASE_URL"); v != "" {
+		return v
+	}
 	u := url.URL{
 		Scheme:   "postgres",
 		User:     url.UserPassword(Getenv("DB_USER", "multicatalogo"), Getenv("DB_PASSWORD", "multicatalogo123")),

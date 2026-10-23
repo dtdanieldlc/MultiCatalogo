@@ -4,6 +4,8 @@ import { Link, useNavigate } from "react-router-dom";
 import { useAuth, type Rol } from "../context/AuthContext";
 import { API_URL } from "../config";
 import InstallPwaButton from "./InstallPwaButton";
+import AuthShell from "./AuthShell";
+import { Alert, Icon } from "./ui";
 
 const Login = () => {
   const [email, setEmail] = useState<string>("");
@@ -38,11 +40,8 @@ const Login = () => {
       })
       .then((data) => {
         setError("");
-        // La API devuelve el rol (admin | cliente) junto al correo (Tema 5)
         const rol: Rol = data.rol === "admin" ? "admin" : "cliente";
         login({ email: data.email, rol, token: data.token });
-
-        // Redirigimos según el rol: admin al Dashboard, cliente a la Tienda
         navigate(rol === "admin" ? "/" : "/tienda");
       })
       .catch((err) => {
@@ -58,78 +57,74 @@ const Login = () => {
       });
   };
 
+  const rellenar = (correo: string) => {
+    setEmail(correo);
+    setPassword("123456");
+    setError("");
+  };
+
   return (
-    <div className="min-h-screen flex items-center justify-center bg-slate-100 px-4">
-      <div className="max-w-md w-full bg-white rounded-xl shadow-md p-8 border border-slate-200">
-        <div className="text-center mb-6">
-          <h2 className="text-3xl font-bold text-slate-900">MultiCatálogo</h2>
-          <p className="text-slate-500 mt-2">
-            Ingresa a tu cuenta para continuar
-          </p>
-        </div>
-
-        <div className="mb-6">
-          <InstallPwaButton variant="login" />
-        </div>
-
-        {error && (
-          <div className="bg-red-50 text-red-600 p-3 rounded-lg text-sm mb-6 text-center border border-red-200">
-            {error}
-          </div>
-        )}
-
-        <form onSubmit={handleSubmit} noValidate className="space-y-6">
-          <div>
-            <label className="block text-sm font-medium text-slate-700 mb-2">
-              Correo Electrónico
-            </label>
-            <input
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className="w-full px-4 py-3 rounded-lg border border-slate-300 focus:ring-2 focus:ring-indigo-600 focus:border-indigo-600 outline-none transition"
-              placeholder="admin@upse.edu.ec"
-              required
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-slate-700 mb-2">
-              Contraseña
-            </label>
-            <input
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="w-full px-4 py-3 rounded-lg border border-slate-300 focus:ring-2 focus:ring-indigo-600 focus:border-indigo-600 outline-none transition"
-              placeholder="••••••"
-              required
-            />
-          </div>
-
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full bg-indigo-600 text-white font-bold py-3 rounded-lg hover:bg-indigo-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            {loading ? "Validando..." : "Iniciar Sesión"}
-          </button>
-        </form>
-
-        <p className="text-center text-sm text-slate-500 mt-6">
-          ¿No tienes cuenta?{" "}
-          <Link to="/registro" className="text-indigo-600 font-medium hover:underline">
-            Crear cuenta
-          </Link>
-        </p>
-
-        <div className="mt-6 p-4 bg-slate-50 rounded-lg border border-slate-200 text-xs text-slate-600 space-y-1">
-          <p className="font-semibold text-slate-700">Cuentas de prueba:</p>
-          <p>👑 Admin: <span className="font-mono">admin@upse.edu.ec / 123456</span></p>
-          <p>🛍️ Cliente: <span className="font-mono">cliente@upse.edu.ec / 123456</span></p>
-        </div>
+    <AuthShell title="Qué bueno verte de nuevo" subtitle="Ingresa a tu cuenta para continuar.">
+      <div className="mb-6">
+        <InstallPwaButton variant="login" />
       </div>
-    </div>
+
+      {error && <Alert>{error}</Alert>}
+
+      <form onSubmit={handleSubmit} noValidate className="space-y-5">
+        <div>
+          <label htmlFor="email" className="label">Correo electrónico</label>
+          <input
+            id="email"
+            type="email"
+            autoComplete="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            className="input"
+            placeholder="tucorreo@ejemplo.com"
+            required
+          />
+        </div>
+
+        <div>
+          <label htmlFor="password" className="label">Contraseña</label>
+          <input
+            id="password"
+            type="password"
+            autoComplete="current-password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            className="input"
+            placeholder="••••••"
+            required
+          />
+        </div>
+
+        <button type="submit" disabled={loading} className="btn btn-primary w-full py-3.5">
+          {loading ? "Validando…" : "Iniciar sesión"}
+        </button>
+      </form>
+
+      <p className="mt-6 text-center text-sm text-ink-500">
+        ¿No tienes cuenta?{" "}
+        <Link to="/registro" className="font-semibold text-brand-700 hover:underline">
+          Crear cuenta
+        </Link>
+      </p>
+
+      <div className="mt-8 rounded-2xl border border-dashed border-ink-200 bg-white/60 p-4">
+        <p className="mb-3 text-xs font-semibold uppercase tracking-wider text-ink-500">Cuentas de prueba</p>
+        <div className="grid gap-2 sm:grid-cols-2">
+          <button type="button" onClick={() => rellenar("admin@upse.edu.ec")} className="btn btn-outline btn-sm justify-start">
+            <Icon name="sparkles" className="h-4 w-4 text-brand-600" /> Administrador
+          </button>
+          <button type="button" onClick={() => rellenar("cliente@upse.edu.ec")} className="btn btn-outline btn-sm justify-start">
+            <Icon name="bag" className="h-4 w-4 text-brand-600" /> Cliente
+          </button>
+        </div>
+        <p className="mt-2 text-xs text-ink-400">Toca una para rellenar el formulario (clave 123456).</p>
+      </div>
+    </AuthShell>
   );
 };
 

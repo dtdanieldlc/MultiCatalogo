@@ -8,6 +8,7 @@ import { Link, useNavigate, useParams } from 'react-router-dom';
 import { getProductoById, ApiError } from '../services/productosService';
 import type { Producto } from '../data/productos';
 import { useCart } from '../context/CartContext';
+import { Alert, Icon, PageLoading, money } from './ui';
 
 
 const DetalleProducto = () => {
@@ -56,17 +57,15 @@ const DetalleProducto = () => {
   }, [lightboxAbierto]);
 
   if (loading) {
-    return <div className="text-center p-8">Cargando producto...</div>;
+    return <PageLoading label="Cargando producto…" />;
   }
 
   if (!producto) {
     return (
-      <div className="bg-white p-10 rounded-lg border border-slate-200 text-center">
-        <p className="bg-red-50 text-red-600 p-3 rounded-lg border border-red-200 mb-4">
-          {error || 'Producto no encontrado.'}
-        </p>
-        <Link to="/catalogo" className="text-indigo-600 font-semibold hover:underline">
-          ← Volver al catálogo
+      <div className="card mx-auto max-w-lg p-10 text-center">
+        <Alert>{error || 'Producto no encontrado.'}</Alert>
+        <Link to="/catalogo" className="btn btn-dark">
+          <Icon name="arrow-left" className="h-4 w-4" /> Volver al catálogo
         </Link>
       </div>
     );
@@ -88,107 +87,91 @@ const DetalleProducto = () => {
 
   return (
     <div>
-      <button
-        onClick={() => navigate(-1)}
-        className="text-indigo-600 font-semibold hover:underline mb-6"
-      >
-        ← Volver
+      <button onClick={() => navigate(-1)} className="btn btn-ghost -ml-3 mb-6">
+        <Icon name="arrow-left" className="h-4 w-4" /> Volver
       </button>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        {/* ===== GALERÍA DE IMÁGENES ===== */}
+      <div className="grid grid-cols-1 gap-8 lg:grid-cols-2 lg:gap-14">
+        {/* ===== GALERÍA ===== */}
         <div>
-          <img
-            src={imagenes[imagenActiva]}
-            alt={producto.nombre}
+          <button
+            type="button"
             onClick={() => setLightboxAbierto(true)}
-            className="w-full h-80 md:h-96 object-cover rounded-xl border border-slate-200 cursor-zoom-in"
-          />
-          <div className="flex gap-3 mt-4">
+            className="block aspect-square w-full cursor-zoom-in overflow-hidden rounded-3xl bg-sand"
+            aria-label="Ampliar imagen"
+          >
+            <img src={imagenes[imagenActiva]} alt={producto.nombre} className="h-full w-full object-cover" />
+          </button>
+          <div className="mt-4 grid grid-cols-4 gap-3">
             {imagenes.map((img, idx) => (
               <button
                 key={img}
                 onClick={() => setImagenActiva(idx)}
-                className={`rounded-lg overflow-hidden border-2 transition ${idx === imagenActiva
-                    ? "border-indigo-600"
-                    : "border-transparent opacity-70 hover:opacity-100"
-                  }`}
+                aria-label={`Ver imagen ${idx + 1}`}
+                className={`aspect-square overflow-hidden rounded-xl border-2 transition ${
+                  idx === imagenActiva ? "border-brand-600" : "border-transparent opacity-60 hover:opacity-100"
+                }`}
               >
-                <img src={img} alt={`Vista ${idx + 1}`} className="w-20 h-16 object-cover" />
+                <img src={img} alt="" className="h-full w-full object-cover" />
               </button>
             ))}
           </div>
         </div>
 
-        {/* ===== INFORMACIÓN DEL PRODUCTO ===== */}
-        <div>
-          <p className="text-xs uppercase tracking-wide text-indigo-500 font-semibold">
-            {producto.categoria}
-          </p>
-          <h1 className="text-3xl font-bold text-slate-800 mt-1 mb-3">{producto.nombre}</h1>
-          <p className="text-3xl font-bold text-indigo-600 mb-6">
-            ${producto.precio.toFixed(2)}
-          </p>
-          <p className="text-slate-600 leading-relaxed mb-8">{producto.descripcion}</p>
+        {/* ===== INFORMACIÓN ===== */}
+        <div className="lg:py-4">
+          <p className="eyebrow">{producto.categoria}</p>
+          <h1 className="mt-2 font-display text-4xl font-semibold leading-tight tracking-tight md:text-5xl">
+            {producto.nombre}
+          </h1>
+          <p className="mt-5 font-display text-3xl text-brand-700">{money(producto.precio)}</p>
+          <p className="mt-6 max-w-prose leading-relaxed text-ink-600">{producto.descripcion}</p>
 
           <button
             onClick={handleAddToCart}
-            className={`w-full md:w-auto px-10 py-4 rounded-lg font-bold transition shadow-md ${agregado
-                ? "bg-green-600 text-white"
-                : "bg-indigo-600 text-white hover:bg-indigo-700"
-              }`}
+            className={`btn mt-9 w-full px-10 py-4 sm:w-auto ${agregado ? "bg-leaf-600 text-white" : "btn-primary"}`}
           >
-            {agregado ? "✓ Añadido al carrito" : "Añadir al Carrito"}
+            {agregado ? (<><Icon name="check" className="h-4 w-4" /> Añadido al carrito</>) : (<><Icon name="bag" className="h-4 w-4" /> Añadir al carrito</>)}
           </button>
         </div>
       </div>
 
-      {/* ===== LIGHTBOX: imagen a pantalla completa ===== */}
+      {/* ===== LIGHTBOX ===== */}
       {lightboxAbierto && (
         <div
-          className="fixed inset-0 z-50 bg-slate-950/95 flex items-center justify-center"
+          role="dialog"
+          aria-modal="true"
+          className="fixed inset-0 z-[60] flex items-center justify-center bg-ink-950/95"
           onClick={() => setLightboxAbierto(false)}
         >
           <button
-            className="absolute top-5 right-5 text-white text-4xl hover:text-slate-300 transition"
+            className="absolute right-4 top-4 flex h-12 w-12 items-center justify-center rounded-full text-white transition hover:bg-white/10"
             onClick={() => setLightboxAbierto(false)}
             aria-label="Cerrar"
           >
-            ×
+            <Icon name="x" className="h-6 w-6" />
           </button>
-
           <button
-            onClick={(e) => {
-              e.stopPropagation();
-              handlePrev();
-            }}
-            className="absolute left-4 md:left-10 text-white text-4xl hover:text-indigo-400 transition"
+            onClick={(e) => { e.stopPropagation(); handlePrev(); }}
+            className="absolute left-3 flex h-12 w-12 items-center justify-center rounded-full text-white transition hover:bg-white/10 md:left-10"
             aria-label="Anterior"
           >
-            ‹
+            <Icon name="arrow-left" className="h-6 w-6" />
           </button>
-
           <img
             src={imagenes[imagenActiva]}
             alt={producto.nombre}
             onClick={(e) => e.stopPropagation()}
-            className="max-h-[85vh] max-w-[85vw] object-contain rounded-lg"
+            className="max-h-[85vh] max-w-[85vw] rounded-2xl object-contain"
           />
-
           <button
-            onClick={(e) => {
-              e.stopPropagation();
-              handleNext();
-            }}
-            className="absolute right-4 md:right-10 text-white text-4xl hover:text-indigo-400 transition"
+            onClick={(e) => { e.stopPropagation(); handleNext(); }}
+            className="absolute right-3 flex h-12 w-12 items-center justify-center rounded-full text-white transition hover:bg-white/10 md:right-10"
             aria-label="Siguiente"
           >
-            ›
+            <Icon name="arrow-right" className="h-6 w-6" />
           </button>
-
-          <p className="absolute bottom-6 text-white/80 text-sm">
-            {imagenActiva + 1} / {imagenes.length}
-          </p>
+          <p className="absolute bottom-6 text-sm text-white/70">{imagenActiva + 1} / {imagenes.length}</p>
         </div>
       )}
     </div>

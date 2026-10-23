@@ -6,6 +6,7 @@ import (
 	"log"
 	"os/signal"
 	"strconv"
+	"strings"
 	"syscall"
 	"time"
 
@@ -113,9 +114,11 @@ func run() error {
 	// recover evita que un panic tumbe el servidor (lo convierte en un 500 estandarizado).
 	app.Use(recover.New())
 
-	// CORS: Vite dev (:5173) y preview PWA (:4173). En aula también IPs de la LAN.
+	// CORS: orígenes permitidos (dev local + frontend en Render + FRONTEND_URL).
+	// El middleware responde solo el preflight OPTIONS, así que va ANTES de las rutas.
 	app.Use(cors.New(cors.Config{
-		AllowOrigins: "http://localhost:5173, http://127.0.0.1:5173, http://localhost:4173, http://127.0.0.1:4173, http://192.168.110.84:5173, http://192.168.110.84:4173, http://192.168.56.1:4173, http://192.168.56.1:5173",
+		AllowOrigins: allowedOrigins(),
+		AllowMethods: "GET, POST, PUT, PATCH, DELETE, OPTIONS",
 		AllowHeaders: "Origin, Content-Type, Accept, Authorization",
 		// Permite que el navegador (fetch) lea X-Cache: HIT | MISS.
 		ExposeHeaders: "X-Cache",
@@ -144,4 +147,28 @@ func run() error {
 		}
 		return err
 	}
+}
+
+// allowedOrigins arma la lista de orígenes CORS.
+// En Render basta con definir FRONTEND_URL (varios separados por coma), p. ej.
+//
+//	FRONTEND_URL=https://multicatalogo-web-0tq3.onrender.com
+//
+// Los orígenes de desarrollo local se mantienen siempre.
+func allowedOrigins() string {
+	origins := []string{
+		"http://localhost:5173", "http://127.0.0.1:5173",
+		"http://localhost:4173", "http://127.0.0.1:4173",
+		"http://192.168.110.84:5173", "http://192.168.110.84:4173",
+		"http://192.168.56.1:4173", "http://192.168.56.1:5173",
+		// Frontend desplegado en Render (sitio estático)
+		"https://multicatalogo-web-0tq3.onrender.com",
+	}
+	for _, o := range strings.Split(config.Getenv("FRONTEND_URL", ""), ",") {
+		o = strings.TrimRight(strings.TrimSpace(o), "/") // sin "/" final
+		if o != "" {
+			origins = append(origins, o)
+		}
+	}
+	return strings.Join(origins, ",")
 }

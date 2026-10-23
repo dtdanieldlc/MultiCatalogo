@@ -1,6 +1,7 @@
 // Dashboard admin — KPIs reales desde /api/reportes/*
 import { useEffect, useState } from 'react';
 import { apiFetch, ApiError } from '../services/http';
+import { Alert, Icon, PageHeader, Skeleton, money } from './ui';
 
 interface Resumen {
   totalVendido: number;
@@ -60,112 +61,82 @@ const Dashboard = () => {
 
   const kpis = resumen
     ? [
-        {
-          etiqueta: 'Total vendido',
-          valor: `$${resumen.totalVendido.toLocaleString(undefined, { minimumFractionDigits: 2 })}`,
-          color: 'text-indigo-600',
-        },
-        {
-          etiqueta: 'Nº pedidos',
-          valor: String(resumen.numPedidos),
-          color: 'text-indigo-600',
-        },
-        {
-          etiqueta: 'Ticket promedio',
-          valor: `$${resumen.ticketPromedio.toFixed(2)}`,
-          color: 'text-slate-800',
-        },
-        {
-          etiqueta: 'Comisiones devengadas',
-          valor: `$${resumen.comisionesDevengadas.toFixed(2)}`,
-          color: 'text-green-600',
-        },
+        { etiqueta: 'Total vendido', valor: money(resumen.totalVendido), icon: 'coin' as const, tono: 'bg-brand-50 text-brand-600' },
+        { etiqueta: 'Nº pedidos', valor: String(resumen.numPedidos), icon: 'clipboard' as const, tono: 'bg-sand text-ink-700' },
+        { etiqueta: 'Ticket promedio', valor: money(resumen.ticketPromedio), icon: 'bag' as const, tono: 'bg-gold-50 text-gold-700' },
+        { etiqueta: 'Comisiones devengadas', valor: money(resumen.comisionesDevengadas), icon: 'users' as const, tono: 'bg-leaf-50 text-leaf-600' },
       ]
     : [];
 
   return (
-    <div className="p-4 max-w-6xl mx-auto">
-      <h1 className="text-2xl font-bold text-slate-800 mb-6">Resumen General</h1>
+    <div>
+      <PageHeader eyebrow="Administración" title="Resumen general" subtitle="Ventas, productos y red en un vistazo." />
 
-      {error && (
-        <div className="bg-red-50 text-red-600 border border-red-200 rounded-lg p-3 mb-4 text-sm">
-          {error}
-        </div>
-      )}
+      {error && <Alert>{error}</Alert>}
 
       {loading ? (
-        <p className="text-slate-500">Cargando reportes…</p>
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+          {[0, 1, 2, 3].map((i) => <Skeleton key={i} className="h-32" />)}
+        </div>
       ) : (
         <>
-          <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 mb-8">
+          <div className="mb-8 grid grid-cols-2 gap-3 sm:gap-4 xl:grid-cols-4">
             {kpis.map((kpi) => (
-              <div
-                key={kpi.etiqueta}
-                className="bg-white p-5 rounded-lg shadow-sm border border-slate-100"
-              >
-                <p className="text-xs text-slate-500 uppercase font-semibold">{kpi.etiqueta}</p>
-                <p className={`text-2xl sm:text-3xl font-bold mt-2 ${kpi.color}`}>{kpi.valor}</p>
+              <div key={kpi.etiqueta} className="card p-5">
+                <span className={`flex h-10 w-10 items-center justify-center rounded-xl ${kpi.tono}`}>
+                  <Icon name={kpi.icon} className="h-5 w-5" />
+                </span>
+                <p className="mt-4 text-xs font-semibold uppercase tracking-wider text-ink-500">{kpi.etiqueta}</p>
+                <p className="mt-1 font-display text-2xl font-semibold text-ink-900 sm:text-3xl">{kpi.valor}</p>
               </div>
             ))}
-            {!resumen && (
-              <p className="text-slate-500 col-span-full">Sin datos de ventas en el periodo.</p>
-            )}
+            {!resumen && <p className="col-span-full text-ink-500">Sin datos de ventas en el periodo.</p>}
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <div className="bg-white p-5 rounded-lg shadow-sm border border-slate-100">
-              <h2 className="text-lg font-bold text-slate-800 mb-4">Top productos</h2>
+          <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+            <section className="card p-6">
+              <h2 className="mb-5 font-display text-xl font-semibold">Top productos</h2>
               {topProd.length === 0 ? (
-                <p className="text-slate-500 text-sm">Aún no hay ventas de productos</p>
+                <p className="text-sm text-ink-500">Aún no hay ventas de productos</p>
               ) : (
-                <ul className="space-y-3">
+                <ol className="divide-y divide-ink-100">
                   {topProd.map((p, i) => (
-                    <li
-                      key={p.productoId}
-                      className="flex justify-between items-center border-b border-slate-50 pb-2"
-                    >
+                    <li key={p.productoId} className="flex items-center justify-between gap-3 py-3">
                       <div className="flex items-center gap-3">
-                        <span className="w-7 h-7 rounded-full bg-indigo-100 text-indigo-700 text-sm font-bold flex items-center justify-center">
-                          {i + 1}
-                        </span>
+                        <span className="flex h-8 w-8 items-center justify-center rounded-full bg-brand-50 font-display text-sm font-semibold text-brand-700">{i + 1}</span>
                         <div>
-                          <p className="font-medium text-slate-800">{p.nombre}</p>
-                          <p className="text-xs text-slate-500">{p.cantidad} uds.</p>
+                          <p className="font-medium text-ink-900">{p.nombre}</p>
+                          <p className="text-xs text-ink-500">{p.cantidad} uds.</p>
                         </div>
                       </div>
-                      <span className="font-semibold text-slate-800">${p.total.toFixed(2)}</span>
+                      <span className="font-semibold">{money(p.total)}</span>
                     </li>
                   ))}
-                </ul>
+                </ol>
               )}
-            </div>
+            </section>
 
-            <div className="bg-white p-5 rounded-lg shadow-sm border border-slate-100">
-              <h2 className="text-lg font-bold text-slate-800 mb-4">Top referidos</h2>
+            <section className="card p-6">
+              <h2 className="mb-5 font-display text-xl font-semibold">Top referidos</h2>
               {topRef.length === 0 ? (
-                <p className="text-slate-500 text-sm">Sin datos de red</p>
+                <p className="text-sm text-ink-500">Sin datos de red</p>
               ) : (
-                <ul className="space-y-3">
+                <ol className="divide-y divide-ink-100">
                   {topRef.map((r, i) => (
-                    <li
-                      key={r.referidoId}
-                      className="flex justify-between items-center border-b border-slate-50 pb-2"
-                    >
+                    <li key={r.referidoId} className="flex items-center justify-between gap-3 py-3">
                       <div className="flex items-center gap-3">
-                        <span className="w-7 h-7 rounded-full bg-amber-100 text-amber-800 text-sm font-bold flex items-center justify-center">
-                          {i + 1}
-                        </span>
-                        <p className="font-medium text-slate-800">{r.nombre}</p>
+                        <span className="flex h-8 w-8 items-center justify-center rounded-full bg-gold-100 font-display text-sm font-semibold text-gold-700">{i + 1}</span>
+                        <p className="font-medium text-ink-900">{r.nombre}</p>
                       </div>
                       <div className="text-right">
-                        <p className="font-semibold">${r.ventas.toLocaleString()}</p>
-                        <p className="text-xs text-green-600">saldo ${r.saldo.toFixed(2)}</p>
+                        <p className="font-semibold">{money(r.ventas)}</p>
+                        <p className="text-xs text-leaf-600">saldo {money(r.saldo)}</p>
                       </div>
                     </li>
                   ))}
-                </ul>
+                </ol>
               )}
-            </div>
+            </section>
           </div>
         </>
       )}

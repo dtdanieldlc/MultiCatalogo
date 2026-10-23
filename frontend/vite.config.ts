@@ -26,8 +26,8 @@ export default defineConfig({
         scope: "/",
         display: "standalone",
         orientation: "portrait-primary",
-        background_color: "#312e81",
-        theme_color: "#3730a3",
+        background_color: "#681f38",
+        theme_color: "#681f38",
         categories: ["shopping", "business"],
         icons: [
           {

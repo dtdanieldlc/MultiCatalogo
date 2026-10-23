@@ -3,4 +3,3 @@ backend/.env
 frontend/dist/
 *.exe
 .DS_Store
-.DS_Store

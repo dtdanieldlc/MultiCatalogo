@@ -1,118 +1,94 @@
 // src/components/Carrito.tsx
-// Carrito de compras con controles de cantidad (Tema 5):
-// - incrementQuantity / decrementQuantity desde el contexto
-// - Enlace al flujo de checkout
 import { Link } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
+import { EmptyState, Icon, PageHeader, money } from './ui';
 
 const Carrito = () => {
-  const {
-    cart,
-    removeFromCart,
-    incrementQuantity,
-    decrementQuantity,
-    totalPrice,
-  } = useCart();
+  const { cart, removeFromCart, incrementQuantity, decrementQuantity, totalPrice } = useCart();
+
+  if (cart.length === 0) {
+    return (
+      <div>
+        <PageHeader eyebrow="Compra" title="Tu carrito" />
+        <EmptyState
+          title="Tu carrito está vacío"
+          text="Aún no has añadido productos. Explora el catálogo y encuentra tu favorito."
+          action={<Link to="/catalogo" className="btn btn-primary">Explorar catálogo</Link>}
+        />
+      </div>
+    );
+  }
 
   return (
     <div>
-      <h1 className="text-2xl font-bold text-slate-800 mb-6">Tu Carrito de Compras</h1>
+      <PageHeader eyebrow="Compra" title="Tu carrito" subtitle={`${cart.length} producto(s) seleccionados`} />
 
-      {cart.length === 0 ? (
-        <div className="bg-white p-8 rounded-lg border border-slate-200 shadow-sm text-center">
-          <p className="text-slate-500">Tu carrito está vacío actualmente.</p>
-          <Link
-            to="/catalogo"
-            className="inline-block mt-4 bg-indigo-600 text-white font-semibold px-6 py-3 rounded-lg hover:bg-indigo-700 transition"
-          >
-            Explorar Catálogo
-          </Link>
-        </div>
-      ) : (
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Lista de productos */}
-          <div className="lg:col-span-2 space-y-4">
-            {cart.map((item) => (
-              <div
-                key={item.id}
-                className="flex items-center justify-between bg-white p-4 rounded-lg border border-slate-200 shadow-sm gap-4"
-              >
-                <div className="flex items-center gap-4">
-                  <img
-                    src={item.img}
-                    alt={item.nombre}
-                    className="w-16 h-16 object-cover rounded-md"
-                  />
-                  <div>
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-[1fr_380px]">
+        <ul className="space-y-3">
+          {cart.map((item) => (
+            <li key={item.id} className="card flex gap-4 p-3 sm:p-4">
+              <Link to={`/producto/${item.id}`} className="shrink-0">
+                <img src={item.img} alt={item.nombre} className="h-24 w-24 rounded-xl bg-sand object-cover sm:h-28 sm:w-28" />
+              </Link>
+              <div className="flex min-w-0 flex-1 flex-col justify-between">
+                <div className="flex items-start justify-between gap-3">
+                  <div className="min-w-0">
                     <Link to={`/producto/${item.id}`}>
-                      <h3 className="font-semibold text-slate-800 hover:text-indigo-600 transition">
-                        {item.nombre}
-                      </h3>
+                      <h3 className="truncate font-display text-lg font-medium text-ink-900 hover:text-brand-700">{item.nombre}</h3>
                     </Link>
-                    <p className="text-sm text-slate-500">${item.precio.toFixed(2)} c/u</p>
+                    <p className="text-sm text-ink-500">{money(item.precio)} c/u</p>
                   </div>
-                </div>
-
-                <div className="flex items-center gap-4">
-                  {/* Control de cantidad */}
-                  <div className="flex items-center border border-slate-200 rounded-lg overflow-hidden">
-                    <button
-                      onClick={() => decrementQuantity(item.id)}
-                      className="px-3 py-2 text-slate-600 hover:bg-slate-100 transition"
-                      aria-label="Disminuir cantidad"
-                    >
-                      −
-                    </button>
-                    <span className="px-3 py-2 text-sm font-semibold text-slate-800 border-x border-slate-200">
-                      {item.cantidad}
-                    </span>
-                    <button
-                      onClick={() => incrementQuantity(item.id)}
-                      className="px-3 py-2 text-slate-600 hover:bg-slate-100 transition"
-                      aria-label="Aumentar cantidad"
-                    >
-                      +
-                    </button>
-                  </div>
-
-                  <p className="font-bold text-indigo-600 w-20 text-right">
-                    ${(item.precio * item.cantidad).toFixed(2)}
-                  </p>
-
                   <button
                     onClick={() => removeFromCart(item.id)}
-                    className="text-red-500 hover:text-red-700 transition"
-                    title="Eliminar producto"
+                    className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-ink-400 transition hover:bg-brand-50 hover:text-brand-700"
+                    aria-label={`Eliminar ${item.nombre}`}
                   >
-                    🗑️
+                    <Icon name="trash" className="h-5 w-5" />
                   </button>
                 </div>
+                <div className="mt-3 flex items-center justify-between">
+                  <div className="flex items-center rounded-full border border-ink-200">
+                    <button
+                      onClick={() => decrementQuantity(item.id)}
+                      className="flex h-10 w-10 items-center justify-center rounded-full text-ink-600 hover:bg-ink-50"
+                      aria-label="Disminuir cantidad"
+                    >
+                      <Icon name="minus" className="h-4 w-4" />
+                    </button>
+                    <span className="w-8 text-center text-sm font-semibold" aria-live="polite">{item.cantidad}</span>
+                    <button
+                      onClick={() => incrementQuantity(item.id)}
+                      className="flex h-10 w-10 items-center justify-center rounded-full text-ink-600 hover:bg-ink-50"
+                      aria-label="Aumentar cantidad"
+                    >
+                      <Icon name="plus" className="h-4 w-4" />
+                    </button>
+                  </div>
+                  <p className="font-semibold text-ink-900">{money(item.precio * item.cantidad)}</p>
+                </div>
               </div>
-            ))}
-          </div>
+            </li>
+          ))}
+        </ul>
 
-          {/* Resumen de pago */}
-          <div className="bg-white p-6 rounded-lg border border-slate-200 shadow-sm h-fit">
-            <h2 className="text-lg font-bold text-slate-800 mb-4">Resumen del Pedido</h2>
-            <div className="flex justify-between border-b border-slate-100 pb-4 mb-4">
-              <span className="text-slate-600">Subtotal</span>
-              <span className="font-semibold">${totalPrice.toFixed(2)}</span>
+        <aside className="card h-fit p-6 lg:sticky lg:top-4">
+          <h2 className="font-display text-xl font-semibold">Resumen del pedido</h2>
+          <dl className="mt-5 space-y-3 text-sm">
+            <div className="flex justify-between">
+              <dt className="text-ink-500">Subtotal</dt>
+              <dd className="font-medium">{money(totalPrice)}</dd>
             </div>
-            <div className="flex justify-between items-center mb-6">
-              <span className="text-slate-800 font-bold">Total a Pagar</span>
-              <span className="text-2xl font-bold text-indigo-600">
-                ${totalPrice.toFixed(2)}
-              </span>
+            <div className="flex items-baseline justify-between border-t border-ink-100 pt-4">
+              <dt className="font-semibold text-ink-900">Total a pagar</dt>
+              <dd className="font-display text-3xl font-semibold text-brand-700">{money(totalPrice)}</dd>
             </div>
-            <Link
-              to="/checkout"
-              className="block w-full text-center bg-indigo-600 text-white py-3 rounded-lg font-semibold hover:bg-indigo-700 transition"
-            >
-              Proceder al Pago
-            </Link>
-          </div>
-        </div>
-      )}
+          </dl>
+          <Link to="/checkout" className="btn btn-primary mt-6 w-full py-3.5">
+            Proceder al pago <Icon name="arrow-right" className="h-4 w-4" />
+          </Link>
+          <Link to="/catalogo" className="btn btn-ghost mt-2 w-full">Seguir comprando</Link>
+        </aside>
+      </div>
     </div>
   );
 };

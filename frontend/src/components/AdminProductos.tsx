@@ -1,6 +1,7 @@
 // /admin/productos — CRUD admin (borrado lógico)
 import { useCallback, useEffect, useState, type FormEvent } from 'react';
 import { apiFetch, ApiError } from '../services/http';
+import { Alert, EmptyState, Icon, PageHeader, PageLoading, money } from './ui';
 
 interface ProductoAdmin {
   id: number;
@@ -125,184 +126,143 @@ const AdminProductos = () => {
   const lista = pagina?.data ?? [];
 
   return (
-    <div className="p-4 max-w-6xl mx-auto">
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-6">
-        <h1 className="text-2xl font-bold text-slate-900">Productos</h1>
-        <button
-          type="button"
-          onClick={abrirCrear}
-          className="bg-indigo-600 text-white font-semibold px-4 py-3 rounded-lg min-h-[44px] hover:bg-indigo-700"
-        >
-          + Nuevo producto
-        </button>
-      </div>
+    <div>
+      <PageHeader
+        eyebrow="Administración"
+        title="Productos"
+        subtitle="Crea, edita y activa o desactiva productos del catálogo."
+        action={
+          <button type="button" onClick={abrirCrear} className="btn btn-primary">
+            <Icon name="plus" className="h-4 w-4" /> Nuevo producto
+          </button>
+        }
+      />
 
-      <div className="flex gap-2 mb-4">
-        <input
-          className="flex-1 border border-slate-300 rounded-lg px-3 py-3 min-h-[44px]"
-          placeholder="Buscar por nombre o categoría…"
-          value={q}
-          onChange={(e) => setQ(e.target.value)}
-          onKeyDown={(e) => e.key === 'Enter' && void cargar(q)}
-        />
-        <button
-          type="button"
-          onClick={() => void cargar(q)}
-          className="border border-slate-300 px-4 rounded-lg min-h-[44px] hover:bg-slate-50"
-        >
-          Buscar
-        </button>
-      </div>
-
-      {error && (
-        <div className="bg-red-50 text-red-600 border border-red-200 rounded-lg p-3 mb-4 text-sm">
-          {error}
+      <div className="mb-5 flex gap-2">
+        <div className="relative flex-1">
+          <Icon name="search" className="pointer-events-none absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-ink-400" />
+          <input
+            className="input rounded-full pl-12"
+            placeholder="Buscar por nombre o categoría…"
+            aria-label="Buscar productos"
+            value={q}
+            onChange={(e) => setQ(e.target.value)}
+            onKeyDown={(e) => e.key === 'Enter' && void cargar(q)}
+          />
         </div>
-      )}
+        <button type="button" onClick={() => void cargar(q)} className="btn btn-outline">Buscar</button>
+      </div>
+
+      {error && <Alert>{error}</Alert>}
 
       {showForm && (
-        <form
-          onSubmit={guardar}
-          className="bg-white border border-slate-200 rounded-lg p-4 mb-6 space-y-3"
-        >
-          <h2 className="font-bold text-slate-800">
-            {editId ? `Editar #${editId}` : 'Nuevo producto'}
-          </h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <input
-              required
-              className="border rounded-lg px-3 py-3 min-h-[44px]"
-              placeholder="Nombre"
-              value={form.nombre}
-              onChange={(e) => setForm({ ...form, nombre: e.target.value })}
-            />
-            <input
-              required
-              className="border rounded-lg px-3 py-3 min-h-[44px]"
-              placeholder="Categoría"
-              value={form.categoria}
-              onChange={(e) => setForm({ ...form, categoria: e.target.value })}
-            />
-            <input
-              required
-              type="number"
-              min={0.01}
-              step={0.01}
-              className="border rounded-lg px-3 py-3 min-h-[44px]"
-              placeholder="Precio"
-              value={form.precio || ''}
-              onChange={(e) => setForm({ ...form, precio: Number(e.target.value) })}
-            />
-            <input
-              type="number"
-              min={0}
-              className="border rounded-lg px-3 py-3 min-h-[44px]"
-              placeholder="Stock"
-              value={form.stock}
-              onChange={(e) => setForm({ ...form, stock: Number(e.target.value) })}
-            />
-            <input
-              className="border rounded-lg px-3 py-3 min-h-[44px] sm:col-span-2"
-              placeholder="URL imagen"
-              value={form.img}
-              onChange={(e) => setForm({ ...form, img: e.target.value })}
-            />
-            <textarea
-              className="border rounded-lg px-3 py-3 sm:col-span-2"
-              placeholder="Descripción"
-              rows={2}
-              value={form.descripcion}
-              onChange={(e) => setForm({ ...form, descripcion: e.target.value })}
-            />
+        <form onSubmit={guardar} className="card mb-6 space-y-4 p-6">
+          <div className="flex items-center justify-between">
+            <h2 className="font-display text-xl font-semibold">{editId ? `Editar producto #${editId}` : 'Nuevo producto'}</h2>
+            <button type="button" onClick={() => setShowForm(false)} className="flex h-10 w-10 items-center justify-center rounded-full text-ink-400 hover:bg-ink-100" aria-label="Cerrar formulario">
+              <Icon name="x" className="h-5 w-5" />
+            </button>
+          </div>
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <div>
+              <label className="label" htmlFor="p-nombre">Nombre</label>
+              <input id="p-nombre" required className="input" value={form.nombre} onChange={(e) => setForm({ ...form, nombre: e.target.value })} />
+            </div>
+            <div>
+              <label className="label" htmlFor="p-cat">Categoría</label>
+              <input id="p-cat" required className="input" value={form.categoria} onChange={(e) => setForm({ ...form, categoria: e.target.value })} />
+            </div>
+            <div>
+              <label className="label" htmlFor="p-precio">Precio ($)</label>
+              <input id="p-precio" required type="number" min={0.01} step={0.01} className="input" value={form.precio || ''} onChange={(e) => setForm({ ...form, precio: Number(e.target.value) })} />
+            </div>
+            <div>
+              <label className="label" htmlFor="p-stock">Stock</label>
+              <input id="p-stock" type="number" min={0} className="input" value={form.stock} onChange={(e) => setForm({ ...form, stock: Number(e.target.value) })} />
+            </div>
+            <div className="sm:col-span-2">
+              <label className="label" htmlFor="p-img">URL de la imagen</label>
+              <input id="p-img" className="input" value={form.img} onChange={(e) => setForm({ ...form, img: e.target.value })} />
+            </div>
+            <div className="sm:col-span-2">
+              <label className="label" htmlFor="p-desc">Descripción</label>
+              <textarea id="p-desc" className="input" rows={3} value={form.descripcion} onChange={(e) => setForm({ ...form, descripcion: e.target.value })} />
+            </div>
           </div>
           <div className="flex gap-2">
-            <button
-              type="submit"
-              disabled={saving}
-              className="bg-indigo-600 text-white px-4 py-3 rounded-lg min-h-[44px] font-semibold disabled:opacity-60"
-            >
-              {saving ? 'Guardando…' : 'Guardar'}
-            </button>
-            <button
-              type="button"
-              onClick={() => setShowForm(false)}
-              className="border px-4 py-3 rounded-lg min-h-[44px]"
-            >
-              Cancelar
-            </button>
+            <button type="submit" disabled={saving} className="btn btn-primary">{saving ? 'Guardando…' : 'Guardar'}</button>
+            <button type="button" onClick={() => setShowForm(false)} className="btn btn-outline">Cancelar</button>
           </div>
         </form>
       )}
 
       {loading ? (
-        <p className="text-slate-500">Cargando…</p>
+        <PageLoading />
+      ) : lista.length === 0 ? (
+        <EmptyState icon="box" title="No hay productos" text="Crea el primero con el botón «Nuevo producto»." />
       ) : (
-        <div className="overflow-x-auto bg-white border border-slate-200 rounded-lg">
-          <table className="min-w-full text-sm">
-            <thead className="bg-slate-50 text-left text-slate-600">
-              <tr>
-                <th className="p-3">Img</th>
-                <th className="p-3">Nombre</th>
-                <th className="p-3">Categoría</th>
-                <th className="p-3">Precio</th>
-                <th className="p-3">Stock</th>
-                <th className="p-3">Estado</th>
-                <th className="p-3">Acciones</th>
-              </tr>
-            </thead>
-            <tbody>
-              {lista.map((p) => (
-                <tr key={p.id} className="border-t border-slate-100">
-                  <td className="p-3">
-                    <img src={p.img} alt="" className="w-12 h-12 object-cover rounded" />
-                  </td>
-                  <td className="p-3 font-medium text-slate-800">{p.nombre}</td>
-                  <td className="p-3 text-slate-600">{p.categoria}</td>
-                  <td className="p-3">${p.precio.toFixed(2)}</td>
-                  <td className="p-3">{p.stock}</td>
-                  <td className="p-3">
-                    <span
-                      className={`text-xs font-semibold px-2 py-1 rounded-full ${
-                        p.activo ? 'bg-green-100 text-green-700' : 'bg-slate-200 text-slate-600'
-                      }`}
-                    >
-                      {p.activo ? 'Activo' : 'Inactivo'}
-                    </span>
-                  </td>
-                  <td className="p-3 space-x-2 whitespace-nowrap">
-                    <button
-                      type="button"
-                      onClick={() => abrirEditar(p)}
-                      className="text-indigo-600 font-medium min-h-[44px] px-2"
-                    >
-                      Editar
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => void toggleActivo(p)}
-                      className="text-slate-600 font-medium min-h-[44px] px-2"
-                    >
-                      {p.activo ? 'Desactivar' : 'Activar'}
-                    </button>
-                  </td>
-                </tr>
-              ))}
-              {lista.length === 0 && (
+        <>
+          {/* Móvil: tarjetas */}
+          <ul className="space-y-3 md:hidden">
+            {lista.map((p) => (
+              <li key={p.id} className="card flex gap-4 p-4">
+                <img src={p.img} alt="" className="h-20 w-20 shrink-0 rounded-xl bg-sand object-cover" />
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-start justify-between gap-2">
+                    <p className="truncate font-semibold text-ink-900">{p.nombre}</p>
+                    <span className={`badge shrink-0 ${p.activo ? 'bg-leaf-100 text-leaf-700' : 'bg-ink-100 text-ink-500'}`}>{p.activo ? 'Activo' : 'Inactivo'}</span>
+                  </div>
+                  <p className="text-sm text-ink-500">{p.categoria} · stock {p.stock}</p>
+                  <p className="font-semibold text-brand-700">{money(p.precio)}</p>
+                  <div className="mt-2 flex gap-2">
+                    <button type="button" onClick={() => abrirEditar(p)} className="btn btn-outline btn-sm">Editar</button>
+                    <button type="button" onClick={() => void toggleActivo(p)} className="btn btn-ghost btn-sm">{p.activo ? 'Desactivar' : 'Activar'}</button>
+                  </div>
+                </div>
+              </li>
+            ))}
+          </ul>
+
+          {/* Escritorio: tabla */}
+          <div className="card hidden overflow-x-auto md:block">
+            <table className="min-w-full text-sm">
+              <thead className="border-b border-ink-100 bg-ink-50/60">
                 <tr>
-                  <td colSpan={7} className="p-6 text-center text-slate-500">
-                    No hay productos
-                  </td>
+                  <th className="th">Producto</th>
+                  <th className="th">Categoría</th>
+                  <th className="th">Precio</th>
+                  <th className="th">Stock</th>
+                  <th className="th">Estado</th>
+                  <th className="th text-right">Acciones</th>
                 </tr>
-              )}
-            </tbody>
-          </table>
-        </div>
+              </thead>
+              <tbody className="divide-y divide-ink-100">
+                {lista.map((p) => (
+                  <tr key={p.id} className="transition hover:bg-ink-50/50">
+                    <td className="td">
+                      <div className="flex items-center gap-3">
+                        <img src={p.img} alt="" className="h-12 w-12 rounded-lg bg-sand object-cover" />
+                        <span className="font-medium text-ink-900">{p.nombre}</span>
+                      </div>
+                    </td>
+                    <td className="td text-ink-600">{p.categoria}</td>
+                    <td className="td font-semibold">{money(p.precio)}</td>
+                    <td className="td">{p.stock}</td>
+                    <td className="td">
+                      <span className={`badge ${p.activo ? 'bg-leaf-100 text-leaf-700' : 'bg-ink-100 text-ink-500'}`}>{p.activo ? 'Activo' : 'Inactivo'}</span>
+                    </td>
+                    <td className="td whitespace-nowrap text-right">
+                      <button type="button" onClick={() => abrirEditar(p)} className="btn btn-ghost btn-sm"><Icon name="edit" className="h-4 w-4" /> Editar</button>
+                      <button type="button" onClick={() => void toggleActivo(p)} className="btn btn-ghost btn-sm">{p.activo ? 'Desactivar' : 'Activar'}</button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </>
       )}
-      {pagina && (
-        <p className="text-xs text-slate-500 mt-2">
-          {pagina.total} producto(s) en total
-        </p>
-      )}
+      {pagina && <p className="mt-3 text-xs text-ink-400">{pagina.total} producto(s) en total</p>}
     </div>
   );
 };

@@ -8,6 +8,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
 import { API_URL } from '../config';
+import { Alert, EmptyState, Icon, PageHeader, money } from './ui';
 
 interface DatosEnvio {
   nombre: string;
@@ -39,12 +40,11 @@ const Checkout = () => {
   // Si el carrito está vacío, mostramos un aviso en lugar del formulario
   if (cart.length === 0) {
     return (
-      <div className="bg-white p-10 rounded-lg border border-slate-200 text-center">
-        <p className="text-slate-600 text-lg mb-4">No tienes productos en el carrito.</p>
-        <Link to="/catalogo" className="text-indigo-600 font-semibold hover:underline">
-          ← Ir al catálogo
-        </Link>
-      </div>
+      <EmptyState
+        title="No tienes productos en el carrito"
+        text="Añade algo del catálogo para continuar con tu compra."
+        action={<Link to="/catalogo" className="btn btn-dark"><Icon name="arrow-left" className="h-4 w-4" /> Ir al catálogo</Link>}
+      />
     );
   }
 
@@ -106,137 +106,92 @@ const Checkout = () => {
 
   return (
     <div>
-      <h1 className="text-2xl font-bold text-slate-800 mb-6">Finalizar Compra</h1>
+      <PageHeader eyebrow="Último paso" title="Finalizar compra" />
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* ===== FORMULARIO DE ENVÍO ===== */}
-        <form onSubmit={handleSubmit} className="lg:col-span-2 space-y-5">
-          <div className="bg-white p-6 rounded-lg border border-slate-200 shadow-sm">
-            <h2 className="text-lg font-bold text-slate-800 mb-4">Datos de Envío</h2>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1">
-                  Nombre completo *
-                </label>
-                <input
-                  type="text"
-                  required
-                  value={datos.nombre}
-                  onChange={(e) => handleChange("nombre", e.target.value)}
-                  className="w-full px-4 py-2.5 rounded-lg border border-slate-300 focus:ring-2 focus:ring-indigo-600 outline-none transition"
-                />
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-[1fr_380px]">
+        <form onSubmit={handleSubmit} className="space-y-6">
+          <section className="card p-6">
+            <h2 className="mb-5 font-display text-xl font-semibold">Datos de envío</h2>
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+              <div className="md:col-span-1">
+                <label htmlFor="nombre" className="label">Nombre completo *</label>
+                <input id="nombre" type="text" required autoComplete="name" value={datos.nombre} onChange={(e) => handleChange("nombre", e.target.value)} className="input" />
               </div>
-              <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1">
-                  Correo electrónico *
-                </label>
-                <input
-                  type="email"
-                  required
-                  value={datos.email}
-                  onChange={(e) => handleChange("email", e.target.value)}
-                  className="w-full px-4 py-2.5 rounded-lg border border-slate-300 focus:ring-2 focus:ring-indigo-600 outline-none transition"
-                />
+              <div className="md:col-span-1">
+                <label htmlFor="email" className="label">Correo electrónico *</label>
+                <input id="email" type="email" required autoComplete="email" value={datos.email} onChange={(e) => handleChange("email", e.target.value)} className="input" />
               </div>
               <div className="md:col-span-2">
-                <label className="block text-sm font-medium text-slate-700 mb-1">
-                  Dirección *
-                </label>
-                <input
-                  type="text"
-                  required
-                  value={datos.direccion}
-                  onChange={(e) => handleChange("direccion", e.target.value)}
-                  className="w-full px-4 py-2.5 rounded-lg border border-slate-300 focus:ring-2 focus:ring-indigo-600 outline-none transition"
-                />
+                <label htmlFor="direccion" className="label">Dirección *</label>
+                <input id="direccion" type="text" required autoComplete="street-address" value={datos.direccion} onChange={(e) => handleChange("direccion", e.target.value)} className="input" />
               </div>
-              <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1">
-                  Ciudad *
-                </label>
-                <input
-                  type="text"
-                  required
-                  value={datos.ciudad}
-                  onChange={(e) => handleChange("ciudad", e.target.value)}
-                  className="w-full px-4 py-2.5 rounded-lg border border-slate-300 focus:ring-2 focus:ring-indigo-600 outline-none transition"
-                />
+              <div className="md:col-span-1">
+                <label htmlFor="ciudad" className="label">Ciudad *</label>
+                <input id="ciudad" type="text" required autoComplete="address-level2" value={datos.ciudad} onChange={(e) => handleChange("ciudad", e.target.value)} className="input" />
               </div>
-              <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1">
-                  Teléfono *
-                </label>
-                <input
-                  type="tel"
-                  required
-                  value={datos.telefono}
-                  onChange={(e) => handleChange("telefono", e.target.value)}
-                  className="w-full px-4 py-2.5 rounded-lg border border-slate-300 focus:ring-2 focus:ring-indigo-600 outline-none transition"
-                />
+              <div className="md:col-span-1">
+                <label htmlFor="telefono" className="label">Teléfono *</label>
+                <input id="telefono" type="tel" required autoComplete="tel" value={datos.telefono} onChange={(e) => handleChange("telefono", e.target.value)} className="input" />
               </div>
             </div>
-          </div>
+          </section>
 
-          <div className="bg-white p-6 rounded-lg border border-slate-200 shadow-sm">
-            <h2 className="text-lg font-bold text-slate-800 mb-4">Método de Pago</h2>
-            <div className="space-y-3">
-              {METODOS_PAGO.map((metodo) => (
-                <label
-                  key={metodo}
-                  className="flex items-center gap-3 p-3 rounded-lg border border-slate-200 cursor-pointer hover:border-indigo-300 transition"
-                >
-                  <input
-                    type="radio"
-                    name="metodoPago"
-                    value={metodo}
-                    checked={datos.metodoPago === metodo}
-                    onChange={(e) => handleChange("metodoPago", e.target.value)}
-                    className="accent-indigo-600"
-                  />
-                  <span className="text-sm text-slate-700">{metodo}</span>
-                </label>
-              ))}
+          <section className="card p-6">
+            <h2 className="mb-5 font-display text-xl font-semibold">Método de pago</h2>
+            <div className="space-y-3" role="radiogroup">
+              {METODOS_PAGO.map((metodo) => {
+                const activo = datos.metodoPago === metodo;
+                return (
+                  <label
+                    key={metodo}
+                    className={`flex min-h-[52px] cursor-pointer items-center gap-3 rounded-xl border px-4 transition ${
+                      activo ? "border-brand-500 bg-brand-50 ring-4 ring-brand-100" : "border-ink-200 hover:border-ink-300"
+                    }`}
+                  >
+                    <input
+                      type="radio"
+                      name="metodoPago"
+                      value={metodo}
+                      checked={activo}
+                      onChange={(e) => handleChange("metodoPago", e.target.value)}
+                      className="h-4 w-4 accent-brand-600"
+                    />
+                    <span className="text-sm font-medium text-ink-800">{metodo}</span>
+                  </label>
+                );
+              })}
             </div>
-          </div>
+          </section>
 
-          {error && (
-            <div role="alert" className="bg-red-50 border border-red-200 text-red-700 text-sm rounded-lg px-4 py-3">
-              {error}
-            </div>
-          )}
+          {error && <Alert>{error}</Alert>}
 
-          <button
-            type="submit"
-            disabled={procesando}
-            className="w-full bg-indigo-600 text-white py-3 rounded-lg font-semibold hover:bg-indigo-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            {procesando ? "Procesando pago..." : "Confirmar Pedido"}
+          <button type="submit" disabled={procesando} className="btn btn-primary w-full py-4 text-base">
+            {procesando ? "Procesando pago…" : `Confirmar pedido · ${money(totalPrice)}`}
           </button>
         </form>
 
-        {/* ===== RESUMEN DEL PEDIDO ===== */}
-        <div className="bg-white p-6 rounded-lg border border-slate-200 shadow-sm h-fit">
-          <h2 className="text-lg font-bold text-slate-800 mb-4">Resumen del Pedido</h2>
-          <div className="space-y-3 border-b border-slate-100 pb-4 mb-4">
+        {/* ===== RESUMEN ===== */}
+        <aside className="card h-fit p-6 lg:sticky lg:top-4">
+          <h2 className="font-display text-xl font-semibold">Resumen</h2>
+          <ul className="mt-5 space-y-4 border-b border-ink-100 pb-5">
             {cart.map((item) => (
-              <div key={item.id} className="flex justify-between text-sm">
-                <span className="text-slate-600">
-                  {item.nombre} × {item.cantidad}
+              <li key={item.id} className="flex items-center gap-3">
+                <span className="relative">
+                  <img src={item.img} alt="" className="h-14 w-14 rounded-lg bg-sand object-cover" />
+                  <span className="absolute -right-2 -top-2 flex h-5 min-w-[20px] items-center justify-center rounded-full bg-ink-900 px-1 text-[11px] font-bold text-white">
+                    {item.cantidad}
+                  </span>
                 </span>
-                <span className="font-semibold text-slate-800">
-                  ${(item.precio * item.cantidad).toFixed(2)}
-                </span>
-              </div>
+                <span className="flex-1 text-sm text-ink-700">{item.nombre}</span>
+                <span className="text-sm font-semibold">{money(item.precio * item.cantidad)}</span>
+              </li>
             ))}
+          </ul>
+          <div className="mt-5 flex items-baseline justify-between">
+            <span className="font-semibold">Total</span>
+            <span className="font-display text-3xl font-semibold text-brand-700">{money(totalPrice)}</span>
           </div>
-          <div className="flex justify-between items-center">
-            <span className="text-slate-800 font-bold">Total</span>
-            <span className="text-2xl font-bold text-indigo-600">
-              ${totalPrice.toFixed(2)}
-            </span>
-          </div>
-        </div>
+        </aside>
       </div>
     </div>
   );

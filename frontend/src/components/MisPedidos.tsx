@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { API_URL } from "../config";
+import { Alert, EmptyState, PageHeader, PageLoading, StatusBadge, money } from "./ui";
 
 interface PedidoLista {
   id: number;
@@ -41,38 +42,33 @@ const MisPedidos = () => {
       .finally(() => setLoading(false));
   }, [user?.token]);
 
-  if (loading) return <p className="text-slate-500 p-6">Cargando pedidos…</p>;
-  if (error)
-    return (
-      <div className="bg-red-50 text-red-600 p-4 rounded-lg m-4 border border-red-200">{error}</div>
-    );
-
   const lista = pagina?.data ?? [];
 
   return (
-    <div className="p-4 max-w-3xl mx-auto">
-      <h1 className="text-2xl font-bold text-slate-900 mb-4">Mis pedidos</h1>
-      {lista.length === 0 ? (
-        <div className="bg-white border border-slate-200 rounded-lg p-8 text-center">
-          <p className="text-slate-600 mb-4">Aún no has realizado pedidos.</p>
-          <Link to="/catalogo" className="text-indigo-600 font-semibold hover:underline">
-            Ir al catálogo
-          </Link>
-        </div>
+    <div className="mx-auto max-w-3xl">
+      <PageHeader eyebrow="Historial" title="Mis pedidos" />
+      {error && <Alert>{error}</Alert>}
+      {loading ? (
+        <PageLoading label="Cargando pedidos…" />
+      ) : lista.length === 0 && !error ? (
+        <EmptyState
+          icon="clipboard"
+          title="Aún no has realizado pedidos"
+          text="Cuando compres algo, aparecerá aquí."
+          action={<Link to="/catalogo" className="btn btn-primary">Ir al catálogo</Link>}
+        />
       ) : (
         <ul className="space-y-3">
           {lista.map((p) => (
-            <li
-              key={p.id}
-              className="bg-white border border-slate-200 rounded-lg p-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2"
-            >
+            <li key={p.id} className="card flex flex-col gap-3 p-5 sm:flex-row sm:items-center sm:justify-between">
               <div>
-                <p className="font-semibold text-slate-900">{p.numero}</p>
-                <p className="text-sm text-slate-500">
-                  {new Date(p.fecha).toLocaleString()} · {p.estado}
-                </p>
+                <p className="font-mono text-sm font-semibold text-ink-900">{p.numero}</p>
+                <p className="mt-0.5 text-sm text-ink-500">{new Date(p.fecha).toLocaleString()}</p>
               </div>
-              <p className="text-lg font-bold text-indigo-600">${p.total.toFixed(2)}</p>
+              <div className="flex items-center justify-between gap-4 sm:justify-end">
+                <StatusBadge estado={p.estado} />
+                <p className="font-display text-2xl font-semibold text-ink-900">{money(p.total)}</p>
+              </div>
             </li>
           ))}
         </ul>

@@ -3,6 +3,8 @@ import { useState, type FormEvent } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { useAuth, type Rol } from "../context/AuthContext";
 import { API_URL } from "../config";
+import AuthShell from "./AuthShell";
+import { Alert } from "./ui";
 
 const Registro = () => {
   const [params] = useSearchParams();
@@ -41,75 +43,35 @@ const Registro = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-slate-100 px-4">
-      <div className="max-w-md w-full bg-white rounded-xl shadow-md p-8 border border-slate-200">
-        <div className="text-center mb-8">
-          <h2 className="text-3xl font-bold text-slate-900">Crear cuenta</h2>
-          <p className="text-slate-500 mt-2">Únete a la red MultiCatálogo</p>
+    <AuthShell title="Crea tu cuenta" subtitle="Únete a la red MultiCatálogo en menos de un minuto.">
+      {error && <Alert>{error}</Alert>}
+      <form onSubmit={handleSubmit} noValidate className="space-y-4">
+        <div>
+          <label htmlFor="nombre" className="label">Nombre</label>
+          <input id="nombre" className="input" autoComplete="name" value={nombre} onChange={(e) => setNombre(e.target.value)} required />
         </div>
-        {error && (
-          <div className="bg-red-50 text-red-600 p-3 rounded-lg text-sm mb-6 text-center border border-red-200">
-            {error}
-          </div>
-        )}
-        <form onSubmit={handleSubmit} noValidate className="space-y-4">
-          <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1">Nombre</label>
-            <input
-              className="w-full border border-slate-300 rounded-lg px-3 py-3 text-base min-h-[44px]"
-              value={nombre}
-              onChange={(e) => setNombre(e.target.value)}
-              required
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1">Correo</label>
-            <input
-              type="email"
-              className="w-full border border-slate-300 rounded-lg px-3 py-3 text-base min-h-[44px]"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1">Contraseña</label>
-            <input
-              type="password"
-              className="w-full border border-slate-300 rounded-lg px-3 py-3 text-base min-h-[44px]"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              minLength={6}
-              required
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1">
-              Código de referido (opcional)
-            </label>
-            <input
-              className="w-full border border-slate-300 rounded-lg px-3 py-3 text-base min-h-[44px]"
-              value={ref}
-              onChange={(e) => setRef(e.target.value)}
-              placeholder="Ej. LUIS"
-            />
-          </div>
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full bg-indigo-600 text-white font-semibold rounded-lg py-3 min-h-[44px] hover:bg-indigo-700 disabled:opacity-60"
-          >
-            {loading ? "Creando…" : "Registrarme"}
-          </button>
-        </form>
-        <p className="text-center text-sm text-slate-500 mt-6">
-          ¿Ya tienes cuenta?{" "}
-          <Link to="/login" className="text-indigo-600 font-medium hover:underline">
-            Iniciar sesión
-          </Link>
-        </p>
-      </div>
-    </div>
+        <div>
+          <label htmlFor="correo" className="label">Correo</label>
+          <input id="correo" type="email" autoComplete="email" className="input" value={email} onChange={(e) => setEmail(e.target.value)} required />
+        </div>
+        <div>
+          <label htmlFor="clave" className="label">Contraseña</label>
+          <input id="clave" type="password" autoComplete="new-password" className="input" value={password} onChange={(e) => setPassword(e.target.value)} minLength={6} required />
+          <p className="mt-1 text-xs text-ink-400">Mínimo 6 caracteres.</p>
+        </div>
+        <div>
+          <label htmlFor="ref" className="label">Código de referido <span className="font-normal text-ink-400">(opcional)</span></label>
+          <input id="ref" className="input" value={ref} onChange={(e) => setRef(e.target.value)} placeholder="Ej. LUIS" />
+        </div>
+        <button type="submit" disabled={loading} className="btn btn-primary w-full py-3.5">
+          {loading ? "Creando…" : "Registrarme"}
+        </button>
+      </form>
+      <p className="mt-6 text-center text-sm text-ink-500">
+        ¿Ya tienes cuenta?{" "}
+        <Link to="/login" className="font-semibold text-brand-700 hover:underline">Iniciar sesión</Link>
+      </p>
+    </AuthShell>
   );
 };
 

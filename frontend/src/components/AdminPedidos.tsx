@@ -1,6 +1,7 @@
 // /admin/pedidos — listado + cambio de estado
 import { useCallback, useEffect, useState } from 'react';
 import { apiFetch, ApiError } from '../services/http';
+import { Alert, EmptyState, Icon, PageHeader, PageLoading, StatusBadge, money } from './ui';
 
 interface PedidoLista {
   id: number;
@@ -27,17 +28,6 @@ const transiciones: Record<string, string[]> = {
   enviado: ['entregado', 'cancelado'],
   entregado: [],
   cancelado: [],
-};
-
-const badge = (estado: string) => {
-  const map: Record<string, string> = {
-    pendiente: 'bg-amber-100 text-amber-800',
-    preparando: 'bg-blue-100 text-blue-800',
-    enviado: 'bg-indigo-100 text-indigo-800',
-    entregado: 'bg-green-100 text-green-800',
-    cancelado: 'bg-red-100 text-red-700',
-  };
-  return map[estado] ?? 'bg-slate-100 text-slate-700';
 };
 
 const AdminPedidos = () => {
@@ -91,85 +81,64 @@ const AdminPedidos = () => {
   const lista = pagina?.data ?? [];
 
   return (
-    <div className="p-4 max-w-6xl mx-auto">
-      <h1 className="text-2xl font-bold text-slate-900 mb-4">Pedidos</h1>
+    <div>
+      <PageHeader eyebrow="Administración" title="Pedidos" subtitle="Sigue cada pedido y avanza su estado." />
 
-      <div className="flex flex-wrap gap-2 mb-4">
+      <div className="no-scrollbar -mx-4 mb-6 flex gap-2 overflow-x-auto px-4 sm:mx-0 sm:px-0">
         {ESTADOS.map((e) => (
           <button
             key={e || 'todos'}
             type="button"
-            onClick={() => {
-              setFiltro(e);
-            }}
-            className={`px-3 py-2 rounded-lg text-sm font-medium min-h-[44px] border ${
-              filtro === e
-                ? 'bg-indigo-600 text-white border-indigo-600'
-                : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-50'
-            }`}
+            onClick={() => setFiltro(e)}
+            className={`chip capitalize ${filtro === e ? 'chip-active' : ''}`}
           >
             {e || 'Todos'}
           </button>
         ))}
       </div>
 
-      {error && (
-        <div className="bg-red-50 text-red-600 border border-red-200 rounded-lg p-3 mb-4 text-sm">
-          {error}
-        </div>
-      )}
+      {error && <Alert>{error}</Alert>}
 
       {loading ? (
-        <p className="text-slate-500">Cargando…</p>
+        <PageLoading />
+      ) : lista.length === 0 ? (
+        <EmptyState icon="doc" title="No hay pedidos" text="No hay pedidos con ese filtro." />
       ) : (
-        <div className="space-y-3">
+        <ul className="space-y-3">
           {lista.map((p) => {
             const siguientes = transiciones[p.estado] ?? [];
             return (
-              <div
-                key={p.id}
-                className="bg-white border border-slate-200 rounded-lg p-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3"
-              >
+              <li key={p.id} className="card flex flex-col gap-4 p-5 sm:flex-row sm:items-center sm:justify-between">
                 <div>
-                  <p className="font-bold text-slate-900">{p.numero}</p>
-                  <p className="text-sm text-slate-500">
+                  <div className="flex flex-wrap items-center gap-3">
+                    <p className="font-mono text-sm font-bold text-ink-900">{p.numero}</p>
+                    <StatusBadge estado={p.estado} />
+                  </div>
+                  <p className="mt-1 text-sm text-ink-500">
                     {p.cliente || p.email || '—'} · {new Date(p.fecha).toLocaleString()}
                   </p>
-                  <p className="text-lg font-semibold text-indigo-600 mt-1">
-                    ${p.total.toFixed(2)}
-                  </p>
+                  <p className="mt-2 font-display text-2xl font-semibold text-ink-900">{money(p.total)}</p>
                 </div>
-                <div className="flex flex-col sm:items-end gap-2">
-                  <span className={`text-xs font-semibold px-2 py-1 rounded-full w-fit ${badge(p.estado)}`}>
-                    {p.estado}
-                  </span>
-                  {siguientes.length > 0 && (
-                    <div className="flex flex-wrap gap-2">
-                      {siguientes.map((s) => (
-                        <button
-                          key={s}
-                          type="button"
-                          disabled={busyId === p.id}
-                          onClick={() => void cambiarEstado(p.id, s)}
-                          className={`text-sm font-medium px-3 py-2 rounded-lg min-h-[44px] border disabled:opacity-50 ${
-                            s === 'cancelado'
-                              ? 'border-red-300 text-red-700 hover:bg-red-50'
-                              : 'border-indigo-300 text-indigo-700 hover:bg-indigo-50'
-                          }`}
-                        >
-                          → {s}
-                        </button>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              </div>
+                {siguientes.length > 0 && (
+                  <div className="flex flex-wrap gap-2">
+                    {siguientes.map((s) => (
+                      <button
+                        key={s}
+                        type="button"
+                        disabled={busyId === p.id}
+                        onClick={() => void cambiarEstado(p.id, s)}
+                        className={`btn btn-sm capitalize ${s === 'cancelado' ? 'btn-danger' : 'btn-dark'}`}
+                      >
+                        {s !== 'cancelado' && <Icon name="arrow-right" className="h-3.5 w-3.5" />}
+                        {s}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </li>
             );
           })}
-          {lista.length === 0 && (
-            <p className="text-center text-slate-500 py-8">No hay pedidos con ese filtro</p>
-          )}
-        </div>
+        </ul>
       )}
     </div>
   );

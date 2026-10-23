@@ -28,19 +28,19 @@ const PwaUpdateToast = () => {
   if (!show) return null;
 
   return (
-    <div className="fixed bottom-4 inset-x-4 z-[100] mx-auto max-w-md rounded-xl bg-indigo-900 text-white shadow-xl border border-indigo-700 p-4 flex flex-col sm:flex-row sm:items-center gap-3">
-      <p className="text-sm flex-1">Hay una nueva versión de MultiCatálogo.</p>
+    <div className="fixed inset-x-4 bottom-4 z-[100] mx-auto flex max-w-md flex-col gap-3 rounded-2xl bg-ink-900 p-4 text-white shadow-lift animate-rise sm:flex-row sm:items-center">
+      <p className="flex-1 text-sm">Hay una nueva versión de MultiCatálogo.</p>
       <div className="flex gap-2">
         <button
           type="button"
-          className="flex-1 sm:flex-none min-h-[44px] px-4 rounded-lg bg-white text-indigo-900 font-semibold text-sm"
+          className="btn btn-sm flex-1 bg-white text-ink-900 hover:bg-brand-100 sm:flex-none"
           onClick={() => void updateServiceWorker(true)}
         >
           Actualizar
         </button>
         <button
           type="button"
-          className="flex-1 sm:flex-none min-h-[44px] px-4 rounded-lg border border-white/30 text-sm"
+          className="btn btn-sm flex-1 border border-white/25 text-white hover:bg-white/10 sm:flex-none"
           onClick={() => setShow(false)}
         >
           Luego

@@ -1,5 +1,6 @@
 // Banner global: sin conexión / de vuelta en línea (HITO G · P4)
 import { useEffect, useState } from "react";
+import { Icon } from "./ui";
 
 const OfflineBanner = () => {
   const [online, setOnline] = useState(
@@ -30,15 +31,16 @@ const OfflineBanner = () => {
   return (
     <div
       role="status"
-      className={`fixed top-0 inset-x-0 z-[100] px-3 py-2 text-center text-sm font-medium shadow-md ${
-        online
-          ? "bg-green-600 text-white"
-          : "bg-amber-500 text-amber-950"
+      className={`fixed inset-x-3 top-3 z-[100] mx-auto flex max-w-xl items-center gap-3 rounded-full px-4 py-2.5 text-sm font-medium shadow-lift animate-rise ${
+        online ? "bg-leaf-600 text-white" : "bg-ink-900 text-white"
       }`}
     >
-      {online
-        ? "Conexión restablecida"
-        : "Sin conexión — el catálogo puede verse en caché; login y compras requieren red"}
+      <Icon name="wifi" className="h-4 w-4 shrink-0" />
+      <span>
+        {online
+          ? "Conexión restablecida"
+          : "Sin conexión — el catálogo puede verse en caché; login y compras requieren red"}
+      </span>
     </div>
   );
 };

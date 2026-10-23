@@ -56,9 +56,9 @@ const InstallPwaButton = ({
   if (installed) return null;
 
   const baseLogin =
-    "w-full flex items-center justify-center gap-2 min-h-[48px] px-4 py-3 rounded-lg border-2 border-indigo-200 bg-indigo-50 text-indigo-800 font-semibold hover:bg-indigo-100 transition";
+    "btn btn-outline w-full border-brand-200 bg-brand-50 text-brand-800 hover:bg-brand-100";
   const baseDefault =
-    "text-sm font-semibold px-3 py-2 rounded-lg bg-indigo-50 text-indigo-700 hover:bg-indigo-100 min-h-[44px]";
+    "btn btn-outline btn-sm";
 
   // Chrome/Edge/Android: prompt nativo
   if (deferred) {
@@ -91,10 +91,10 @@ const InstallPwaButton = ({
           Instalar en este dispositivo
         </button>
         {showIosHelp && (
-          <div className="text-left text-xs text-slate-600 bg-slate-50 border border-slate-200 rounded-lg p-3 space-y-1">
+          <div className="text-left text-xs text-ink-600 bg-sand rounded-xl p-3 space-y-1">
             {isIos() ? (
               <>
-                <p className="font-semibold text-slate-800">En iPhone / iPad (Safari):</p>
+                <p className="font-semibold text-ink-900">En iPhone / iPad (Safari):</p>
                 <ol className="list-decimal list-inside space-y-1">
                   <li>Toca el botón <strong>Compartir</strong> (cuadrado con flecha).</li>
                   <li>Elige <strong>Añadir a pantalla de inicio</strong>.</li>
@@ -103,7 +103,7 @@ const InstallPwaButton = ({
               </>
             ) : (
               <>
-                <p className="font-semibold text-slate-800">Cómo instalar:</p>
+                <p className="font-semibold text-ink-900">Cómo instalar:</p>
                 <ul className="list-disc list-inside space-y-1">
                   <li>
                     <strong>Chrome / Edge:</strong> menú ⋮ → <em>Instalar MultiCatálogo</em> o el icono ⊕ en la barra de direcciones.
