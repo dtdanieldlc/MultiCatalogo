@@ -13,10 +13,12 @@ import Confirmacion from './components/Confirmacion';
 import Login from './components/Login';
 import Registro from './components/Registro';
 import MisPedidos from './components/MisPedidos';
+import Favoritos from "./components/Favoritos";
 import AdminProductos from './components/AdminProductos';
 import AdminPedidos from './components/AdminPedidos';
 import AdminLiquidaciones from './components/AdminLiquidaciones';
 import { CartProvider } from './context/CartContext';
+import { FavoritesProvider } from './context/FavoritesContext';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import OfflineBanner from './components/OfflineBanner';
 import PwaUpdateToast from './components/PwaUpdateToast';
@@ -56,7 +58,9 @@ const CartBoundary = ({ children }: { children: ReactNode }) => {
   const { user } = useAuth();
   return (
     <CartProvider key={user?.email ?? "anonimo"}>
-      {children}
+      <FavoritesProvider key={`fav-${user?.email ?? "anonimo"}`}>
+        {children}
+      </FavoritesProvider>
     </CartProvider>
   );
 };
@@ -93,6 +97,7 @@ function App() {
                 <Route path="checkout" element={<Checkout />} />
                 <Route path="confirmacion" element={<Confirmacion />} />
                 <Route path="mis-pedidos" element={<MisPedidos />} />
+                <Route path="favoritos" element={<Favoritos />} />
               </Route>
             </Route>
 

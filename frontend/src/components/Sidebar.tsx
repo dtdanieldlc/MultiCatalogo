@@ -23,6 +23,7 @@ const NAV_ITEMS: NavItem[] = [
   { to: "/catalogo", label: "Catálogo", title: "Catálogo", icon: "grid" },
   { to: "/mi-red", label: "Mi Red", title: "Mi Red", icon: "users" },
   { to: "/mis-pedidos", label: "Mis pedidos", title: "Mis pedidos", icon: "clipboard" },
+  { to: "/favoritos", label: "Favoritos", title: "Favoritos", icon: "heart" },
   { to: "/admin/productos", label: "Productos", title: "Admin productos", icon: "box", soloAdmin: true },
   { to: "/admin/pedidos", label: "Pedidos", title: "Admin pedidos", icon: "doc", soloAdmin: true },
   { to: "/admin/liquidaciones", label: "Liquidaciones", title: "Liquidaciones", icon: "coin", soloAdmin: true },
@@ -71,9 +72,13 @@ const Sidebar = ({ isCollapsed, isMobileOpen, closeMobileMenu }: SidebarProps) =
     >
       <div className={`flex h-16 items-center border-b border-ink-100 px-5 ${isCollapsed ? "md:justify-center md:px-0" : ""}`}>
         {isCollapsed ? (
-          <span className="hidden h-9 w-9 items-center justify-center rounded-full bg-brand-600 font-display text-[11px] font-bold tracking-tight text-white md:flex">
-            DTLC
-          </span>
+          <img
+            src="/logo-dtlc.png"
+            alt="DTLC"
+            width={36}
+            height={36}
+            className="hidden h-9 w-9 rounded-full object-cover shadow-sm md:block"
+          />
         ) : null}
         <span className={isCollapsed ? "md:hidden" : ""}>
           <Logo />

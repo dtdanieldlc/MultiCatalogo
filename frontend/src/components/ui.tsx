@@ -25,7 +25,10 @@ const PATHS = {
   copy: "M8 7v8a2 2 0 002 2h6M8 7V5a2 2 0 012-2h4.586a1 1 0 01.707.293l4.414 4.414a1 1 0 01.293.707V15a2 2 0 01-2 2h-2M8 7H6a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2v-2",
   sparkles: "M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z",
   link: "M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1",
-  chevron: "M19 9l-7 7-7-7",
+
+  heart: "M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z",
+  share: "M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z",
+  bell: "M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9",  chevron: "M19 9l-7 7-7-7",
   edit: "M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z",
   wifi: "M8.111 16.404a5.5 5.5 0 017.778 0M12 20h.01m-7.08-7.071c3.904-3.905 10.236-3.905 14.141 0M1.394 9.393c5.857-5.857 15.355-5.857 21.213 0",
 } as const;
@@ -160,13 +163,13 @@ export const StatusBadge = ({ estado }: { estado: string }) => (
 /* ------------------------------ Marca ------------------------------ */
 export const Logo = ({ light = false }: { light?: boolean }) => (
   <span className="inline-flex items-center gap-2.5">
-    <span
-      className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full font-display text-[11px] font-bold tracking-tight ${
-        light ? "bg-white text-brand-700" : "bg-brand-600 text-white"
-      }`}
-    >
-      DTLC
-    </span>
+    <img
+      src="/logo-dtlc.png"
+      alt="DTLC"
+      width={36}
+      height={36}
+      className="h-9 w-9 shrink-0 rounded-full object-cover shadow-sm"
+    />
     <span className="flex flex-col leading-none">
       <span
         className={`font-display text-xl font-semibold tracking-tight ${
