@@ -27,6 +27,11 @@ const NAV_ITEMS: NavItem[] = [
   { to: "/admin/usuarios", label: "Usuarios", title: "Admin usuarios", icon: "users", soloAdmin: true },
   { to: "/admin/productos", label: "Productos", title: "Admin productos", icon: "box", soloAdmin: true },
   { to: "/admin/pedidos", label: "Pedidos", title: "Admin pedidos", icon: "doc", soloAdmin: true },
+  { to: "/admin/inventario", label: "Inventario", title: "Inventario", icon: "box", soloAdmin: true },
+  { to: "/admin/reportes", label: "Reportes", title: "Reportes", icon: "clipboard", soloAdmin: true },
+  { to: "/admin/cupones", label: "Cupones", title: "Cupones", icon: "coin", soloAdmin: true },
+  { to: "/admin/campanas", label: "Campañas", title: "Campañas", icon: "bag", soloAdmin: true },
+  { to: "/admin/config", label: "Configuración", title: "Config", icon: "home", soloAdmin: true },
   { to: "/admin/liquidaciones", label: "Liquidaciones", title: "Liquidaciones", icon: "coin", soloAdmin: true },
 ];
 

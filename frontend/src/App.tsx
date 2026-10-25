@@ -17,6 +17,11 @@ import Favoritos from "./components/Favoritos";
 import AdminUsuarios from "./components/AdminUsuarios";
 import AdminProductos from './components/AdminProductos';
 import AdminPedidos from './components/AdminPedidos';
+import AdminInventario from './components/AdminInventario';
+import AdminReportes from './components/AdminReportes';
+import AdminCupones from './components/AdminCupones';
+import AdminCampanas from './components/AdminCampanas';
+import AdminConfig from './components/AdminConfig';
 import AdminLiquidaciones from './components/AdminLiquidaciones';
 import { CartProvider } from './context/CartContext';
 import { FavoritesProvider } from './context/FavoritesContext';
@@ -87,6 +92,11 @@ function App() {
                   <Route path="admin/usuarios" element={<AdminUsuarios />} />
                   <Route path="admin/productos" element={<AdminProductos />} />
                   <Route path="admin/pedidos" element={<AdminPedidos />} />
+                  <Route path="admin/inventario" element={<AdminInventario />} />
+                  <Route path="admin/reportes" element={<AdminReportes />} />
+                  <Route path="admin/cupones" element={<AdminCupones />} />
+                  <Route path="admin/campanas" element={<AdminCampanas />} />
+                  <Route path="admin/config" element={<AdminConfig />} />
                   <Route path="admin/liquidaciones" element={<AdminLiquidaciones />} />
                 </Route>
 
