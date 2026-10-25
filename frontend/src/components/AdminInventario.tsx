@@ -3,7 +3,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { apiFetch, ApiError } from "../services/http";
 import { getConfig } from "../services/adminConfigService";
-import { Alert, EmptyState, Icon, PageHeader, PageLoading, money } from "./ui";
+import { Alert, EmptyState, PageHeader, PageLoading, money } from "./ui";
 
 interface ProductoAdmin {
   id: number;
