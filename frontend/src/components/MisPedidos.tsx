@@ -1,8 +1,7 @@
-// Mis pedidos + timeline de seguimiento
+// /mis-pedidos — historial + timeline de estado
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { useAuth } from "../context/AuthContext";
-import { API_URL } from "../config";
+import { apiFetch, ApiError } from "../services/http";
 import {
   Alert,
   EmptyState,
@@ -22,86 +21,74 @@ interface PedidoLista {
 
 interface Pagina {
   data: PedidoLista[];
-  page: number;
-  limit: number;
   total: number;
 }
 
-const FLUJO = ["pendiente", "preparando", "enviado", "entregado"] as const;
+const PASOS = ["pendiente", "confirmado", "enviado", "entregado"];
 
-function idxEstado(estado: string): number {
-  if (estado === "cancelado") return -1;
-  const i = FLUJO.indexOf(estado as (typeof FLUJO)[number]);
-  return i >= 0 ? i : 0;
-}
-
-const Timeline = ({ estado }: { estado: string }) => {
-  if (estado === "cancelado") {
+function Timeline({ estado }: { estado: string }) {
+  const e = estado.toLowerCase();
+  if (e.includes("cancel")) {
     return (
-      <p className="mt-3 text-sm font-medium text-red-600">Pedido cancelado</p>
+      <p className="text-xs font-medium text-red-600">Pedido cancelado</p>
     );
   }
-  const actual = idxEstado(estado);
+  let idx = PASOS.findIndex((p) => e.includes(p));
+  if (idx < 0) idx = 0;
   return (
-    <ol className="mt-4 flex items-center gap-0">
-      {FLUJO.map((paso, i) => {
-        const done = i <= actual;
-        return (
-          <li key={paso} className="flex flex-1 items-center">
-            <div className="flex flex-col items-center">
-              <span
-                className={`flex h-7 w-7 items-center justify-center rounded-full text-[10px] font-bold ${
-                  done
-                    ? "bg-leaf-600 text-white"
-                    : "bg-ink-100 text-ink-400"
-                }`}
-              >
-                {i + 1}
-              </span>
-              <span
-                className={`mt-1 text-[10px] capitalize ${
-                  done ? "font-semibold text-ink-800" : "text-ink-400"
-                }`}
-              >
-                {paso}
-              </span>
-            </div>
-            {i < FLUJO.length - 1 && (
-              <div
-                className={`mx-1 h-0.5 flex-1 ${
-                  i < actual ? "bg-leaf-500" : "bg-ink-100"
-                }`}
-              />
-            )}
-          </li>
-        );
-      })}
+    <ol className="mt-3 flex gap-1">
+      {PASOS.map((p, i) => (
+        <li key={p} className="flex-1">
+          <div
+            className={`h-1.5 rounded-full ${
+              i <= idx ? "bg-brand-600" : "bg-ink-100"
+            }`}
+          />
+          <p
+            className={`mt-1 text-[10px] capitalize ${
+              i <= idx ? "font-semibold text-brand-700" : "text-ink-400"
+            }`}
+          >
+            {p}
+          </p>
+        </li>
+      ))}
     </ol>
   );
-};
+}
 
 const MisPedidos = () => {
-  const { user } = useAuth();
   const [pagina, setPagina] = useState<Pagina | null>(null);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
   const [abierto, setAbierto] = useState<number | null>(null);
 
   useEffect(() => {
-    if (!user?.token) return;
-    setLoading(true);
-    fetch(`${API_URL}/api/pedidos/mios?page=1&limit=20`, {
-      headers: { Authorization: `Bearer ${user.token}` },
-    })
-      .then(async (r) => {
-        const data = await r.json().catch(() => null);
-        if (!r.ok) throw new Error(data?.message ?? `HTTP ${r.status}`);
-        return data as Pagina;
-      })
-      .then(setPagina)
-      .catch((e) => setError(e.message))
-      .finally(() => setLoading(false));
-  }, [user?.token]);
+    let cancel = false;
+    (async () => {
+      setLoading(true);
+      setError("");
+      try {
+        const data = await apiFetch<Pagina | PedidoLista[]>(
+          "/api/pedidos/mios?page=1&limit=30"
+        );
+        if (cancel) return;
+        if (Array.isArray(data)) {
+          setPagina({ data, total: data.length });
+        } else {
+          setPagina(data);
+        }
+      } catch (e) {
+        if (!cancel)
+          setError(e instanceof ApiError ? e.message : "Error al cargar pedidos");
+      } finally {
+        if (!cancel) setLoading(false);
+      }
+    })();
+    return () => {
+      cancel = true;
+    };
+  }, []);
 
   const lista = pagina?.data ?? [];
 
@@ -110,7 +97,7 @@ const MisPedidos = () => {
       <PageHeader
         eyebrow="Historial"
         title="Mis pedidos"
-        subtitle="Seguimiento de cada compra"
+        subtitle="Seguimiento y detalle de tus compras"
       />
       {error && <Alert>{error}</Alert>}
       {loading ? (
@@ -145,7 +132,7 @@ const MisPedidos = () => {
                       {new Date(p.fecha).toLocaleString()}
                     </p>
                   </div>
-                  <div className="flex items-center gap-4">
+                  <div className="flex items-center justify-between gap-4 sm:justify-end">
                     <StatusBadge estado={p.estado} />
                     <p className="font-display text-2xl font-semibold text-ink-900">
                       {money(p.total)}
@@ -153,11 +140,17 @@ const MisPedidos = () => {
                   </div>
                 </button>
                 {open && (
-                  <div className="mt-2 border-t border-ink-50 pt-2">
+                  <div className="mt-4 border-t border-ink-100 pt-4">
                     <p className="text-xs font-semibold uppercase tracking-wider text-ink-400">
                       Seguimiento
                     </p>
                     <Timeline estado={p.estado} />
+                    <Link
+                      to={`/confirmacion?pedido=${p.id}`}
+                      className="btn btn-sm btn-outline mt-4"
+                    >
+                      Ver comprobante
+                    </Link>
                   </div>
                 )}
               </li>

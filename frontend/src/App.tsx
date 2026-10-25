@@ -12,6 +12,11 @@ import Checkout from './components/Checkout';
 import Confirmacion from './components/Confirmacion';
 import Login from './components/Login';
 import Registro from './components/Registro';
+import MisComisiones from './components/MisComisiones';
+import MisLiquidaciones from './components/MisLiquidaciones';
+import MiPerfil from './components/MiPerfil';
+import Materiales from './components/Materiales';
+import Notificaciones from './components/Notificaciones';
 import MisPedidos from './components/MisPedidos';
 import Favoritos from "./components/Favoritos";
 import AdminUsuarios from "./components/AdminUsuarios";
@@ -109,6 +114,12 @@ function App() {
                 <Route path="checkout" element={<Checkout />} />
                 <Route path="confirmacion" element={<Confirmacion />} />
                 <Route path="mis-pedidos" element={<MisPedidos />} />
+                <Route path="mis-comisiones" element={<MisComisiones />} />
+                <Route path="mis-liquidaciones" element={<MisLiquidaciones />} />
+                <Route path="mi-perfil" element={<MiPerfil />} />
+                <Route path="materiales" element={<Materiales />} />
+                <Route path="notificaciones" element={<Notificaciones />} />
+
                 <Route path="favoritos" element={<Favoritos />} />
               </Route>
             </Route>

@@ -1,5 +1,6 @@
 // Mi Red — subárbol del usuario + link de invitación + ledger de comisiones
 import { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { apiFetch, ApiError } from '../services/http';
 import { Alert, Icon, PageHeader, PageLoading, StatusBadge, money } from './ui';
 
@@ -156,7 +157,14 @@ const MiRed = () => {
       </section>
 
       <section className="card p-6">
-        <h2 className="mb-4 font-display text-xl font-semibold">Mis comisiones</h2>
+        <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
+          <h2 className="font-display text-xl font-semibold">Mis comisiones</h2>
+          <div className="flex gap-2">
+            <Link to="/mis-comisiones" className="btn btn-sm btn-outline">Ver todo</Link>
+            <Link to="/mis-liquidaciones" className="btn btn-sm btn-dark">Liquidaciones</Link>
+            <Link to="/materiales" className="btn btn-sm btn-outline">Materiales</Link>
+          </div>
+        </div>
         {coms && (
           <div className="mb-6 grid grid-cols-3 gap-3 text-center">
             {resumen.map((r) => (
